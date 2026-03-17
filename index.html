@@ -3,144 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>部首冒險：幻夜寶藏箱 | Trò chơi Bộ thủ mạo hiểm</title>
+    <title>部首冒險：VR 全息寶藏箱 | Trò chơi Bộ thủ mạo hiểm VR</title>
     <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* 專屬科技幻夜配色 */
-            --primary-color: #0033FF; 
+            /* 科技幻夜 VR 配色 */
+            --primary-color: #0088FF; 
             --secondary-color: #9933FF; 
-            
-            /* 配合主色的幻夜場景 */
-            --sky-blue: #0D0D2B; 
-            --grass-green: #9933FF; 
-            --dirt-brown: #001544; 
-            
-            --text-color: #333333;
-            --danger-color: #FF4444;
-            --success-color: #00CC66;
+            --bg-dark: #050510;
+            --text-color: #FFFFFF;
+            --danger-color: #FF3366;
+            --success-color: #00FF66;
         }
 
         body {
             font-family: 'Mulish', 'Microsoft JhengHei', sans-serif;
             margin: 0; padding: 0;
-            background-color: var(--sky-blue);
+            background-color: var(--bg-dark);
+            color: var(--text-color);
             overflow: hidden; 
-            image-rendering: pixelated; 
+            /* VR 空間網格背景 */
+            background-image: 
+                linear-gradient(rgba(0, 136, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 136, 255, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            perspective: 1000px; /* VR 3D 視角核心 */
         }
 
-        /* 像素冒險場景容器 */
-        .pixel-scene {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
-            z-index: 1; 
-            display: flex; flex-direction: column;
-            justify-content: space-between;
+        .vr-reticle {
+            position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
+            background: rgba(255,255,255,0.5); border-radius: 50%;
+            transform: translate(-50%, -50%); z-index: 0; pointer-events: none;
+            box-shadow: 0 0 10px var(--success-color);
         }
 
-        /* 場景元素 */
-        .sky { background-color: var(--sky-blue); flex-grow: 1; position: relative; }
-        .ground-dirt { height: 30vh; display: flex; flex-direction: column; overflow: hidden; }
-        .grass { background-color: var(--grass-green); height: 15vh; border-top: 4px solid #B266FF; position: relative;}
-        .dirt { background-color: var(--dirt-brown); flex-grow: 1; border-top: 4px solid #002277;}
-
-        /* 星星點綴暗夜天空 */
-        .stars { position: absolute; top: 10%; left: 20%; width: 4px; height: 4px; background: white; box-shadow: 100px 50px white, 250px 10px white, 50px 150px white, 300px 120px white; z-index: 0; }
-
-        .rock-left { position: absolute; bottom: 15vh; left: 5%; width: 150px; height: 150px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"%3E%3Crect width="10" height="10" fill="%23222244"/%3E%3Crect x="1" y="1" width="8" height="8" fill="%23444466"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; z-index: 1; }
-        .treasure-chest { position: absolute; bottom: 18vh; right: 5%; width: 200px; height: 160px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"%3E%3Crect width="10" height="10" fill="%23FFB07F"/%3E%3Crect x="1" y="1" width="8" height="8" fill="%23FFD1A9"/%3E%3Crect y="3" width="10" height="2" fill="%23FFD1A9"/%3E%3C rect x="4" y="6" width="2" height="2" fill="%23FFD1A9"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; z-index: 0; filter: drop-shadow(0 0 15px rgba(153, 51, 255, 0.6)); }
-        .vines { position: absolute; bottom: 15vh; right: 15%; width: 100px; height: 200px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"%3E%3Cpath d="M5 0h2v1H5zm1 1h2v1H6zm1 1h2v1H7zm1 1h2v1H8zm1 1h2v1H9zM5 4h2v1H5zm1 1h2v1H6zm1 2h2v1H7zm1 1h2v1H8zm1 1h2v1H9z" fill="%230033FF"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; z-index: 1; }
-
-        /* 遊戲核心 UI */
+        /* VR 全息浮空面板 */
         #app {
-            background: rgba(255, 255, 255, 0.95); 
+            background: rgba(10, 10, 25, 0.6); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
             width: 90%; max-width: 500px;
-            margin: auto;
-            border: 8px solid var(--primary-color); 
-            padding: 20px;
+            border: 2px solid rgba(0, 136, 255, 0.5); 
+            padding: 30px 20px;
             box-sizing: border-box;
-            position: absolute; top: 12vh; left: 50%; transform: translateX(-50%);
             z-index: 10; 
-            border-radius: 0;
-            image-rendering: pixelated;
             text-align: center;
-            box-shadow: 0 0 30px rgba(0, 51, 255, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 136, 255, 0.3), inset 0 0 20px rgba(153, 51, 255, 0.2);
+            /* 調整為稍微俯視的科技控制台角度 */
+            transform: rotateX(8deg) translateY(-2%);
+            transition: transform 0.3s ease-out;
         }
+
+        #app:hover { transform: rotateX(0deg) translateY(0); }
 
         .hidden { display: none !important; }
 
-        h1 { font-size: 26px; color: var(--primary-color); margin-bottom: 5px; font-weight: 900;}
-        .subtitle { font-size: 15px; color: #666; margin-bottom: 20px; }
+        h1 { font-size: 26px; color: var(--success-color); margin-bottom: 5px; font-weight: 900; text-shadow: 0 0 10px rgba(0,255,102,0.5);}
+        .subtitle { font-size: 15px; color: #AACCFF; margin-bottom: 20px; }
 
         /* 進度條與生命值 */
-        .status-ui { position: absolute; top: 15px; right: 15px; z-index: 20; display: flex; flex-direction: column; align-items: flex-end; width: 100%; padding-right: 30px; box-sizing: border-box;}
-        .pixel-heart-bar { display: flex; gap: 8px; margin-bottom: 10px; }
-        .pixel-heart { width: 25px; height: 25px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 0h4v1H3V0zm-1 1h6v1H2V1zM1 2h8v1H1V2zm-1 1h10v3H0V3zm1 3h8v1H1V6zm1 1h6v1H2V7zm1 1h4v1H3V8z' fill='%23FF4444'/%3E%3C/svg%3E"); background-size: contain; background-repeat: no-repeat;}
-        .pixel-heart.empty { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 0h4v1H3V0zm-1 1h6v1H2V1zM1 2h8v1H1V2zm-1 1h10v3H0V3zm1 3h8v1H1V6zm1 1h6v1H2V7zm1 1h4v1H3V8z' fill='%23444466'/%3E%3C/svg%3E"); }
+        .status-ui { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 20px; border-bottom: 1px solid rgba(0, 136, 255, 0.3); padding-bottom: 15px;
+        }
         
-        .progress-container-adventure { display: flex; gap: 3px; justify-content: flex-end; flex-wrap: wrap; max-width: 250px;}
-        .pixel-progress-segment { width: 12px; height: 12px; border: 2px solid var(--primary-color); background-color: rgba(255,255,255,0.2); }
-        .pixel-progress-segment.active { background-color: var(--secondary-color); border-color: var(--primary-color); box-shadow: 0 0 5px var(--secondary-color);}
+        .stage-badge { 
+            background: rgba(0, 136, 255, 0.2); color: var(--primary-color); 
+            padding: 5px 12px; font-weight: bold; font-size: 14px; 
+            border-radius: 8px; border: 1px solid var(--primary-color); 
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .pixel-heart-bar { display: flex; gap: 6px; }
+        .pixel-heart { font-size: 20px; line-height: 1; filter: drop-shadow(0 0 5px var(--danger-color)); }
+        .pixel-heart.empty { filter: grayscale(100%) opacity(0.3); }
+        
+        .progress-container-adventure { display: flex; gap: 4px; justify-content: center; margin-top: 10px;}
+        .pixel-progress-segment { width: 100%; height: 6px; background-color: rgba(255,255,255,0.1); border-radius: 3px;}
+        .pixel-progress-segment.active { background-color: var(--secondary-color); box-shadow: 0 0 8px var(--secondary-color);}
 
         /* 遊戲區域 */
-        .question-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; color: var(--primary-color); }
-        .question-subtitle { font-size: 14px; color: #888; margin-bottom: 20px; }
-        .target-item {
-            font-size: 55px;
-            font-weight: 900;
-            color: var(--primary-color);
-            margin: 15px 0;
-            text-shadow: 2px 2px 0px var(--secondary-color);
+        .question-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: var(--primary-color); text-shadow: 0 0 5px rgba(0,136,255,0.5);}
+        .question-subtitle { font-size: 14px; color: #88BBAA; margin-bottom: 10px; }
+        .target-item { 
+            font-size: 65px; font-weight: 900; color: #FFFFFF; 
+            margin: 15px 0; text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--secondary-color); 
         }
 
-        /* 像素風格按鈕 */
+        /* 預設通用按鈕 (開始/重玩等) */
         .btn {
-            display: block;
-            width: 100%;
-            background-color: var(--secondary-color);
-            border: 4px solid var(--primary-color); 
-            padding: 12px;
-            margin: 8px 0;
-            font-size: 18px;
-            font-family: inherit;
-            font-weight: bold;
-            color: white; 
-            cursor: pointer;
-            transition: all 0.1s;
-            border-radius: 0;
-            box-shadow: 4px 4px 0px rgba(0, 51, 255, 0.3);
+            display: block; width: 100%; 
+            background: rgba(10, 10, 25, 0.8); 
+            border: 2px solid var(--primary-color); 
+            padding: 15px; margin: 12px 0; font-size: 18px; font-family: inherit; font-weight: bold;
+            color: #FFFFFF; cursor: pointer; transition: all 0.3s ease; border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 136, 255, 0.3), inset 0 0 10px rgba(0, 136, 255, 0.1);
         }
-        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px rgba(0, 51, 255, 0.3); }
-        .btn:hover { background-color: var(--primary-color); border-color: var(--secondary-color); }
+        .btn:active { transform: scale(0.96); }
+        .btn:hover { background: rgba(0, 136, 255, 0.2); box-shadow: 0 0 25px rgba(0, 136, 255, 0.6); }
+
+        /* --- 遊戲選項專屬顏色 (紅、黃、綠) --- */
+        
+        /* 選項 1：霓虹紅 */
+        #options-container .btn:nth-child(1) {
+            border-color: #FF3366;
+            box-shadow: 0 0 15px rgba(255, 51, 102, 0.3), inset 0 0 10px rgba(255, 51, 102, 0.1);
+        }
+        #options-container .btn:nth-child(1):hover {
+            background: rgba(255, 51, 102, 0.2);
+            box-shadow: 0 0 25px rgba(255, 51, 102, 0.6), inset 0 0 15px rgba(255, 51, 102, 0.3);
+            text-shadow: 0 0 8px #FF3366;
+        }
+
+        /* 選項 2：星芒黃 */
+        #options-container .btn:nth-child(2) {
+            border-color: #FFCC00;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.3), inset 0 0 10px rgba(255, 204, 0, 0.1);
+        }
+        #options-container .btn:nth-child(2):hover {
+            background: rgba(255, 204, 0, 0.2);
+            box-shadow: 0 0 25px rgba(255, 204, 0, 0.6), inset 0 0 15px rgba(255, 204, 0, 0.3);
+            text-shadow: 0 0 8px #FFCC00;
+        }
+
+        /* 選項 3：量子綠 */
+        #options-container .btn:nth-child(3) {
+            border-color: #00FF66;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3), inset 0 0 10px rgba(0, 255, 102, 0.1);
+        }
+        #options-container .btn:nth-child(3):hover {
+            background: rgba(0, 255, 102, 0.2);
+            box-shadow: 0 0 25px rgba(0, 255, 102, 0.6), inset 0 0 15px rgba(0, 255, 102, 0.3);
+            text-shadow: 0 0 8px #00FF66;
+        }
+        /* --------------------------------- */
         
         /* 回饋彈跳視窗 */
         #feedback-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95);
+            background: rgba(5, 5, 16, 0.85); backdrop-filter: blur(15px);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            border-radius: 0; border: 8px solid var(--primary-color); z-index: 100;
-            image-rendering: pixelated;
-            box-sizing: border-box;
-            padding: 20px;
+            border: 2px solid var(--primary-color); z-index: 100; box-sizing: border-box; padding: 20px;
+            border-radius: 15px;
         }
-        .feedback-icon { font-size: 70px; margin-bottom: 10px; }
-        .feedback-text-zh { font-size: 24px; font-weight: bold; margin-bottom: 5px; color: var(--primary-color);}
-        .feedback-text-vn { font-size: 18px; color: #666; margin-bottom: 20px; }
-        .next-btn { background-color: var(--primary-color); border: none; color: white; width: 90%; border: 4px solid var(--secondary-color); }
-        .next-btn:hover { background-color: var(--secondary-color); }
+        .feedback-icon { font-size: 70px; margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.5));}
+        .feedback-text-zh { font-size: 26px; font-weight: bold; margin-bottom: 5px; color: var(--success-color); text-shadow: 0 0 10px var(--success-color);}
+        .feedback-text-vn { font-size: 18px; color: #AACCFF; margin-bottom: 25px; }
+        .next-btn { border-color: var(--primary-color); width: 90%; }
         
     </style>
 </head>
 <body>
 
+<div class="vr-reticle"></div>
+
 <div id="app">
     <div id="screen-start">
-        <h1>部首冒險：幻夜寶藏箱</h1>
-        <div class="subtitle">Mạo hiểm: Chinh phục rương báu</div>
-        <div class="target-item">🎮</div>
-        <button class="btn" onclick="startGame()">開始挑戰<br><span style="font-size: 14px; font-weight: normal;">Bắt đầu thử thách</span></button>
+        <h1>部首冒險：VR全息訓練</h1>
+        <div class="subtitle">Huấn luyện Thực tế ảo: Bộ thủ</div>
+        <div class="target-item">🥽</div>
+        <div style="font-size: 14px; color:#AACCFF; margin-bottom:20px; font-weight:bold;">包含 5 關卡，共 50 題挑戰！</div>
+        <button class="btn" onclick="startGame()">啟動系統 (Khởi động)</button>
     </div>
 
     <div id="screen-game" class="hidden">
+        <div class="status-ui" id="status-ui-container">
+            <div class="stage-badge" id="stage-badge">關卡 1 / 5</div>
+            <div class="pixel-heart-bar">
+                <div class="pixel-heart" id="heart-1">❤️</div>
+                <div class="pixel-heart" id="heart-2">❤️</div>
+                <div class="pixel-heart" id="heart-3">❤️</div>
+                <div class="pixel-heart" id="heart-4">❤️</div>
+                <div class="pixel-heart" id="heart-5">❤️</div>
+            </div>
+        </div>
+        <div class="progress-container-adventure" id="progress-container-adventure"></div>
+
         <div class="question-title" id="q-title-zh"></div>
         <div class="question-subtitle" id="q-title-vn"></div>
         <div class="target-item" id="q-target"></div>
@@ -148,244 +192,188 @@
     </div>
 
     <div id="screen-end" class="hidden">
-        <h1>挑戰完成！擊敗大魔王！</h1>
-        <div class="subtitle">Hoàn thành thử thách! Đánh bại Trùm cuối!</div>
+        <h1>訓練完成！系統解除</h1>
+        <div class="subtitle">Hoàn thành huấn luyện! Ngắt kết nối</div>
         <div class="target-item">🏆</div>
-        <h2 id="final-score" style="color: var(--primary-color);">答對: 0 / 15</h2>
-        <button class="btn" onclick="location.reload()">再玩一次<br><span style="font-size: 14px; font-weight: normal;">Chơi lại</span></button>
+        <h2 id="final-score" style="color: var(--success-color); text-shadow: 0 0 10px var(--success-color);">總答對: 50 / 50</h2>
+        <button class="btn" onclick="location.reload()">重新啟動 (Chơi lại)</button>
     </div>
 
     <div id="screen-gameover" class="hidden">
-        <h1 style="color: var(--danger-color);">生命值扣完！遊戲結束</h1>
-        <div class="subtitle">Đã hết máu! Trò chơi kết thúc</div>
+        <h1 style="color: var(--danger-color); text-shadow: 0 0 10px var(--danger-color);">系統崩潰！任務失敗</h1>
+        <div class="subtitle">Hệ thống sập! Nhiệm vụ thất bại</div>
         <div class="target-item">💀</div>
-        <button class="btn" onclick="location.reload()">重新開始<br><span style="font-size: 14px; font-weight: normal;">Chơi lại</span></button>
+        <button class="btn" onclick="location.reload()">重新啟動 (Chơi lại)</button>
     </div>
 
     <div id="feedback-modal" class="hidden">
         <div class="feedback-icon" id="fb-icon"></div>
         <div class="feedback-text-zh" id="fb-zh"></div>
         <div class="feedback-text-vn" id="fb-vn"></div>
-        <button class="btn next-btn" id="fb-btn" onclick="closeFeedback()">繼續 / Tiếp tục</button>
+        <button class="btn next-btn" id="fb-btn" onclick="closeFeedback()">確認 (Xác nhận)</button>
     </div>
-</div>
-
-<div class="pixel-scene hidden" id="pixel-scene-container">
-    <div class="sky">
-        <div class="stars"></div>
-        <div class="rock-left"></div>
-        <div class="treasure-chest"></div>
-        <div class="vines"></div>
-    </div>
-    <div class="ground-dirt">
-        <div class="grass"></div>
-        <div class="dirt"></div>
-    </div>
-</div>
-
-<div class="status-ui hidden" id="status-ui-container">
-    <div class="pixel-heart-bar">
-        <div class="pixel-heart" id="heart-1"></div>
-        <div class="pixel-heart" id="heart-2"></div>
-        <div class="pixel-heart" id="heart-3"></div>
-    </div>
-    <div class="progress-container-adventure" id="progress-container-adventure"></div>
 </div>
 
 <script>
-    // ==========================================
-    // 遊戲音效引擎 (Web Audio API)
-    // ==========================================
     let audioCtx;
     function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     }
-
     function playTone(freq, type, duration, vol = 0.1) {
         if (!audioCtx) return;
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
         gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
+        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
+    function playCorrectSound() { initAudio(); playTone(987.77, 'sine', 0.1, 0.1); setTimeout(() => playTone(1318.51, 'sine', 0.2, 0.1), 100); }
+    function playWrongSound() { initAudio(); playTone(150, 'sawtooth', 0.3, 0.2); }
+    function playLevelUpSound() { initAudio(); playTone(261.63, 'square', 0.1); setTimeout(() => playTone(392.00, 'square', 0.1), 150); setTimeout(() => playTone(523.25, 'square', 0.3), 300); }
 
-    function playCorrectSound() {
-        initAudio();
-        playTone(987.77, 'square', 0.1, 0.1); 
-        setTimeout(() => playTone(1318.51, 'square', 0.2, 0.1), 100); 
-    }
-
-    function playWrongSound() {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
-        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
-    }
-
-    function playLevelUpSound() {
-        initAudio();
-        playTone(261.63, 'square', 0.1); 
-        setTimeout(() => playTone(329.63, 'square', 0.1), 100); 
-        setTimeout(() => playTone(392.00, 'square', 0.1), 200); 
-        setTimeout(() => playTone(523.25, 'square', 0.3), 300); 
-    }
-
-    // ==========================================
-    // 動態難度題庫設定區 (共 80 題)
-    // ==========================================
     const questionBank = {
-        1: [ // 難度 1：認識部首 
-            { target: "人", options: ["người (Người)", "dao (Dao)", "vách núi (Vách núi)"], answer: 0 },
-            { target: "刀", options: ["sức (Sức)", "dao (Dao)", "bước dài (Bước dài)"], answer: 1 },
-            { target: "力", options: ["sức (Sức)", "miệng (Miệng)", "tay (Tay)"], answer: 0 },
-            { target: "宀", options: ["mái che (Mái che)", "mái nhà (Mái nhà)", "hang (Hang)"], answer: 1 },
-            { target: "心", options: ["tim, lòng (Tim/Tình cảm)", "mặt trăng (Mặt trăng)", "thịt (Thịt)"], answer: 0 },
-            { target: "手", options: ["tay (Tay)", "nói (Nói)", "cây (Cây)"], answer: 0 },
-            { target: "木", options: ["nước (Nước)", "cây (Cây)", "lúa (Lúa)"], answer: 1 },
-            { target: "水", options: ["nước (Nước)", "rượu (Rượu)", "côn trùng (Côn trùng)"], answer: 0 },
-            { target: "犬", options: ["trâu, bò (Trâu bò)", "chó (Chó)", "heo (Heo)"], answer: 1 },
-            { target: "疒", options: ["bệnh (Bệnh)", "thịt (Thịt)", "gò đất (Gò đất)"], answer: 0 },
-            { target: "糸", options: ["tơ (Tơ lụa)", "gạo (Gạo)", "lúa (Lúa)"], answer: 0 },
-            { target: "肉", options: ["thịt (Thịt)", "quần áo (Quần áo)", "mặt trăng (Mặt trăng)"], answer: 0 },
-            { target: "舟", options: ["xe (Xe cộ)", "thuyền (Thuyền)", "chim (Chim)"], answer: 1 },
-            { target: "衣", options: ["quần áo (Quần áo)", "lời nói (Lời nói)", "cửa (Cửa)"], answer: 0 },
-            { target: "貝", options: ["vỏ sò, tiền (Vỏ sò/Tiền)", "kim loại (Kim loại)", "ngọc (Ngọc)"], answer: 0 },
-            { target: "食", options: ["ăn (Ăn)", "uống (Uống)", "rượu (Rượu)"], answer: 0 }
+        1: [ 
+            { target: "人 🧍", options: ["người (Người) 🧍", "dao (Dao) 🔪", "vách núi (Vách núi) ⛰️"], answer: 0 },
+            { target: "刀 🔪", options: ["sức (Sức) 💪", "dao (Dao) 🔪", "bước dài (Bước dài) 🚶"], answer: 1 },
+            { target: "力 💪", options: ["sức (Sức) 💪", "miệng (Miệng) 👄", "tay (Tay) ✋"], answer: 0 },
+            { target: "宀 🏠", options: ["mái che (Mái che) ⛺", "mái nhà (Mái nhà) 🏠", "hang (Hang) 🕳️"], answer: 1 },
+            { target: "心 ❤️", options: ["tim, lòng (Tim/Tình cảm) ❤️", "mặt trăng (Mặt trăng) 🌙", "thịt (Thịt) 🥩"], answer: 0 },
+            { target: "手 ✋", options: ["tay (Tay) ✋", "nói (Nói) 🗣️", "cây (Cây) 🌳"], answer: 0 },
+            { target: "木 🌳", options: ["nước (Nước) 💧", "cây (Cây) 🌳", "lúa (Lúa) 🌾"], answer: 1 },
+            { target: "水 💧", options: ["nước (Nước) 💧", "rượu (Rượu) 🍷", "côn trùng (Côn trùng) 🐛"], answer: 0 },
+            { target: "犬 🐕", options: ["trâu, bò (Trâu bò) 🐄", "chó (Chó) 🐕", "heo (Heo) 🐖"], answer: 1 },
+            { target: "疒 🤒", options: ["bệnh (Bệnh) 🤒", "thịt (Thịt) 🥩", "gò đất (Gò đất) ⛰️"], answer: 0 },
+            { target: "糸 🧶", options: ["tơ (Tơ lụa) 🧶", "gạo (Gạo) 🍚", "lúa (Lúa) 🌾"], answer: 0 },
+            { target: "肉 🥩", options: ["thịt (Thịt) 🥩", "quần áo (Quần áo) 👕", "mặt trăng (Mặt trăng) 🌙"], answer: 0 },
+            { target: "舟 ⛵", options: ["xe (Xe cộ) 🚗", "thuyền (Thuyền) ⛵", "chim (Chim) 🐦"], answer: 1 },
+            { target: "衣 👕", options: ["quần áo (Quần áo) 👕", "lời nói (Lời nói) 🗣️", "cửa (Cửa) 🚪"], answer: 0 },
+            { target: "貝 🐚", options: ["vỏ sò, tiền (Vỏ sò/Tiền) 💰", "kim loại (Kim loại) 🪙", "ngọc (Ngọc) 💎"], answer: 0 },
+            { target: "食 🍚", options: ["ăn (Ăn) 🍽️", "uống (Uống) 🥤", "rượu (Rượu) 🍷"], answer: 0 }
         ],
-        2: [ // 難度 2：找漢字中的部首 
-            { target: "你 (Bạn)", options: ["人 (亻)", "尔", "小"], answer: 0 },
-            { target: "冰 (Đá, lạnh)", options: ["水", "冫", "人"], answer: 1 },
-            { target: "吃 (Ăn)", options: ["口", "乞", "乙"], answer: 0 },
-            { target: "好 (Tốt)", options: ["子", "女", "一"], answer: 1 },
-            { target: "家 (Nhà)", options: ["宀", "豕", "一"], answer: 0 },
-            { target: "想 (Nhớ, nghĩ)", options: ["木", "目", "心"], answer: 2 },
-            { target: "打 (Đánh)", options: ["手 (扌)", "丁", "一"], answer: 0 },
-            { target: "林 (Rừng)", options: ["木", "八", "十"], answer: 0 },
-            { target: "海 (Biển)", options: ["水 (氵)", "每", "母"], answer: 0 },
-            { target: "狗 (Chó)", options: ["犬 (犭)", "句", "口"], answer: 0 },
-            { target: "病 (Bệnh)", options: ["疒", "丙", "一"], answer: 0 },
-            { target: "紅 (Đỏ)", options: ["糸 (糹)", "工", "一"], answer: 0 },
-            { target: "胖 (Béo)", options: ["肉 (月)", "半", "十"], answer: 0 },
-            { target: "說 (Nói)", options: ["言", "兌", "口"], answer: 0 },
-            { target: "錢 (Tiền)", options: ["金 (釒)", "戔", "一"], answer: 0 },
-            { target: "飯 (Cơm)", options: ["食 (飠)", "反", "人"], answer: 0 }
+        2: [ 
+            { target: "你 (Bạn) 🧍", options: ["人 (亻) 🧍", "尔", "小"], answer: 0 },
+            { target: "冰 (Đá, lạnh) 🧊", options: ["水 💧", "冫 ❄️", "人 🧍"], answer: 1 },
+            { target: "吃 (Ăn) 🍽️", options: ["口 👄", "乞", "乙"], answer: 0 },
+            { target: "好 (Tốt) 👍", options: ["子 👶", "女 👩", "一"], answer: 1 },
+            { target: "家 (Nhà) 🏠", options: ["宀 🏠", "豕 🐖", "一"], answer: 0 },
+            { target: "想 (Nhớ, nghĩ) 🤔", options: ["木 🌳", "目 👀", "心 ❤️"], answer: 2 },
+            { target: "打 (Đánh) 🥊", options: ["手 (扌) ✋", "丁", "一"], answer: 0 },
+            { target: "林 (Rừng) 🌲", options: ["木 🌳", "八", "十"], answer: 0 },
+            { target: "海 (Biển) 🌊", options: ["水 (氵) 💧", "每", "母"], answer: 0 },
+            { target: "狗 (Chó) 🐕", options: ["犬 (犭) 🐕", "句", "口 👄"], answer: 0 },
+            { target: "病 (Bệnh) 🤒", options: ["疒 🤒", "丙", "一"], answer: 0 },
+            { target: "紅 (Đỏ) 🔴", options: ["糸 (糹) 🧶", "工", "一"], answer: 0 },
+            { target: "胖 (Béo) 🤰", options: ["肉 (月) 🥩", "半", "十"], answer: 0 },
+            { target: "說 (Nói) 🗣️", options: ["言 🗣️", "兌", "口 👄"], answer: 0 },
+            { target: "錢 (Tiền) 💰", options: ["金 (釒) 🪙", "戔", "一"], answer: 0 },
+            { target: "飯 (Cơm) 🍚", options: ["食 (飠) 🍚", "反", "人 🧍"], answer: 0 }
         ],
-        3: [ // 難度 3：部首組合與造字 
-            { target: "亻(人) + 尔 = ?", options: ["你 (Bạn)", "他 (Anh ấy)", "休 (Nghỉ ngơi)"], answer: 0 },
-            { target: "女 + 子 = ?", options: ["好 (Tốt)", "媽 (Mẹ)", "姐 (Chị)"], answer: 0 },
-            { target: "宀 + 豕(heo) = ?", options: ["家 (Nhà)", "字 (Chữ)", "安 (An toàn)"], answer: 0 },
-            { target: "木 + 木 = ?", options: ["林 (Rừng)", "樹 (Cây)", "本 (Bản)"], answer: 0 },
-            { target: "氵(水) + 每 = ?", options: ["海 (Biển)", "河 (Sông)", "洗 (Rửa)"], answer: 0 },
-            { target: "犭(犬) + 句 = ?", options: ["狗 (Chó)", "貓 (Mèo)", "豬 (Heo)"], answer: 0 },
-            { target: "疒 + 丙 = ?", options: ["病 (Bệnh)", "痛 (Đau)", "瘦 (Gầy)"], answer: 0 },
-            { target: "糹(糸) + 工 = ?", options: ["紅 (Đỏ)", "綠 (Xanh)", "給 (Cho)"], answer: 0 },
-            { target: "衤(衣) + 羊 = ?", options: ["裙 (Váy)", "褲 (Quần)", "裝 (Trang phục)"], answer: 0 },
-            { target: "言 + 兌 = ?", options: ["說 (Nói)", "請 (Mời)", "語 (Ngôn ngữ)"], answer: 0 },
-            { target: "貝 + 賣 = ?", options: ["買 (Mua)", "貴 (Đắt)", "費 (Phí)"], answer: 0 },
-            { target: "辶(bước đi) + 斤 = ?", options: ["近 (Gần)", "遠 (Xa)", "送 (Tặng)"], answer: 0 },
-            { target: "釒(金) + 戔 = ?", options: ["錢 (Tiền)", "銀 (Bạc)", "錯 (Sai)"], answer: 0 },
-            { target: "門 + 口 = ?", options: ["問 (Hỏi)", "開 (Mở)", "間 (Gian/Phòng)"], answer: 0 },
-            { target: "飠(食) + 反 = ?", options: ["飯 (Cơm)", "飲 (Uống)", "餓 (Đói)"], answer: 0 },
-            { target: "日 + 月 = ?", options: ["明 (Sáng/Ngày mai)", "早 (Sớm)", "晚 (Muộn)"], answer: 0 }
+        3: [ 
+            { target: "亻+ 尔 = ? 🧍", options: ["你 (Bạn) 👉", "他 (Anh ấy) 👦", "休 (Nghỉ ngơi) 🛌"], answer: 0 },
+            { target: "女 + 子 = ? 👩‍👦", options: ["好 (Tốt) 👍", "媽 (Mẹ) 👩", "姐 (Chị) 👧"], answer: 0 },
+            { target: "宀 + 豕(heo) = ? 🐖🏠", options: ["家 (Nhà) 🏠", "字 (Chữ) 🔤", "安 (An toàn) 🛡️"], answer: 0 },
+            { target: "木 + 木 = ? 🌳🌳", options: ["林 (Rừng) 🌲", "樹 (Cây) 🌳", "本 (Bản) 📘"], answer: 0 },
+            { target: "氵+ 每 = ? 💧🌊", options: ["海 (Biển) 🌊", "河 (Sông) 🏞️", "洗 (Rửa) 🧼"], answer: 0 },
+            { target: "犭+ 句 = ? 🐕", options: ["狗 (Chó) 🐕", "貓 (Mèo) 🐈", "豬 (Heo) 🐖"], answer: 0 },
+            { target: "疒 + 丙 = ? 🤒", options: ["病 (Bệnh) 🤒", "痛 (Đau) 🤕", "瘦 (Gầy) 🧍"], answer: 0 },
+            { target: "糹+ 工 = ? 🧶🔴", options: ["紅 (Đỏ) 🔴", "綠 (Xanh) 🟢", "給 (Cho) 🎁"], answer: 0 },
+            { target: "衤+ 羊 = ? 👕🐑", options: ["裙 (Váy) 👗", "褲 (Quần) 👖", "裝 (Trang phục) 👔"], answer: 0 },
+            { target: "言 + 兌 = ? 🗣️", options: ["說 (Nói) 🗣️", "請 (Mời) 🙏", "語 (Ngôn ngữ) 💬"], answer: 0 },
+            { target: "貝 + 賣 = ? 💰", options: ["買 (Mua) 🛒", "貴 (Đắt) 💎", "費 (Phí) 💵"], answer: 0 },
+            { target: "辶+ 斤 = ? 🚶", options: ["近 (Gần) 📍", "遠 (Xa) 🔭", "送 (Tặng) 🎁"], answer: 0 },
+            { target: "釒+ 戔 = ? 🪙", options: ["錢 (Tiền) 💰", "銀 (Bạc) 🥈", "錯 (Sai) ❌"], answer: 0 },
+            { target: "門 + 口 = ? 🚪👄", options: ["問 (Hỏi) ❓", "開 (Mở) 👐", "間 (Gian/Phòng) 🛋️"], answer: 0 },
+            { target: "飠+ 反 = ? 🍚", options: ["飯 (Cơm) 🍚", "飲 (Uống) 🥤", "餓 (Đói) 😫"], answer: 0 },
+            { target: "日 + 月 = ? ☀️🌙", options: ["明 (Sáng/Ngày mai) 💡", "早 (Sớm) 🌅", "晚 (Muộn) 🌃"], answer: 0 }
         ],
-        4: [ // 難度 4：形近字辨析 
-            { target: "___客 (Mời khách)", options: ["請 (言)", "清 (水)", "情 (心)"], answer: 0 },
-            { target: "___水 (Uống nước)", options: ["喝 (口)", "渴 (水)", "唱 (口)"], answer: 0 },
-            { target: "心___ (Tâm tình)", options: ["情 (心)", "晴 (日)", "請 (言)"], answer: 0 },
-            { target: "___天 (Trời nắng)", options: ["晴 (日)", "睛 (目)", "情 (心)"], answer: 0 },
-            { target: "___字 (Đánh chữ)", options: ["打 (手)", "找 (手)", "訂 (言)"], answer: 0 },
-            { target: "___家 (Gia đình)", options: ["家 (宀)", "嫁 (女)", "稼 (禾)"], answer: 0 },
-            { target: "生___ (Bị bệnh)", options: ["病 (疒)", "丙 (一)", "炳 (火)"], answer: 0 },
-            { target: "___狗 (Con chó)", options: ["狗 (犬)", "夠 (夕)", "句 (口)"], answer: 0 },
-            { target: "___行 (Ngân hàng)", options: ["銀 (金)", "很 (彳)", "跟 (足)"], answer: 0 },
-            { target: "___鐘 (Đồng hồ/Phút)", options: ["鐘 (金)", "懂 (心)", "種 (禾)"], answer: 0 },
-            { target: "___飯 (Ăn cơm)", options: ["吃 (口)", "氣 (气)", "汽 (水)"], answer: 0 },
-            { target: "顏___ (Màu sắc)", options: ["色 (色)", "紅 (糸)", "江 (水)"], answer: 0 },
-            { target: "牛___ (Thịt bò)", options: ["肉 (肉)", "內 (入)", "月 (月)"], answer: 0 },
-            { target: "___菜 (Mua rau)", options: ["買 (貝)", "賣 (士)", "實 (宀)"], answer: 0 },
-            { target: "明___ (Ngày mai)", options: ["天 (大)", "夫 (大)", "太 (大)"], answer: 0 },
-            { target: "___話 (Nói chuyện)", options: ["說 (言)", "脫 (肉)", "銳 (金)"], answer: 0 }
+        4: [ 
+            { target: "___客 (Mời khách) 🍵", options: ["請 (言) 🙏", "清 (水) 💧", "情 (心) ❤️"], answer: 0 },
+            { target: "___水 (Uống nước) 🚰", options: ["喝 (口) 🥤", "渴 (水) 🥵", "唱 (口) 🎤"], answer: 0 },
+            { target: "心___ (Tâm tình) 💌", options: ["情 (心) ❤️", "晴 (日) ☀️", "請 (言) 🙏"], answer: 0 },
+            { target: "___天 (Trời nắng) ☀️", options: ["晴 (日) ☀️", "睛 (目) 👀", "情 (心) ❤️"], answer: 0 },
+            { target: "___字 (Đánh chữ) ⌨️", options: ["打 (手) ✋", "找 (手) 🔍", "訂 (言) 📝"], answer: 0 },
+            { target: "___家 (Gia đình) 👨‍👩‍👧‍👦", options: ["家 (宀) 🏠", "嫁 (女) 👰", "稼 (禾) 🌾"], answer: 0 },
+            { target: "生___ (Bị bệnh) 🤒", options: ["病 (疒) 🤒", "丙 (一) 1️⃣", "炳 (火) 🔥"], answer: 0 },
+            { target: "___狗 (Con chó) 🐕", options: ["狗 (犬) 🐕", "夠 (夕) 🌕", "句 (口) 👄"], answer: 0 },
+            { target: "___行 (Ngân hàng) 🏦", options: ["銀 (金) 🪙", "很 (彳) 🚶", "跟 (足) 👣"], answer: 0 },
+            { target: "___鐘 (Đồng hồ/Phút) ⏱️", options: ["鐘 (金) 🪙", "懂 (心) ❤️", "種 (禾) 🌾"], answer: 0 },
+            { target: "___飯 (Ăn cơm) 🍚", options: ["吃 (口) 👄", "氣 (气) 💨", "汽 (水) 💧"], answer: 0 },
+            { target: "顏___ (Màu sắc) 🎨", options: ["色 (色) 🎨", "紅 (糸) 🔴", "江 (水) 🌊"], answer: 0 },
+            { target: "牛___ (Thịt bò) 🥩", options: ["肉 (肉) 🥩", "內 (入) 🚪", "月 (月) 🌙"], answer: 0 },
+            { target: "___菜 (Mua rau) 🛒", options: ["買 (貝) 💰", "賣 (士) 👨‍🎓", "實 (宀) 🏠"], answer: 0 },
+            { target: "明___ (Ngày mai) 📅", options: ["天 (大) ☀️", "夫 (大) 👨", "太 (大) 🌞"], answer: 0 },
+            { target: "___話 (Nói chuyện) 🗣️", options: ["說 (言) 🗣️", "脫 (肉) 👕", "銳 (金) 🔪"], answer: 0 }
         ],
-        5: [ // 難度 5：大魔王盲猜 
-            { target: "「冰箱」", options: ["Liên quan đến Băng/Lạnh (冫)", "Liên quan đến Lửa (火)", "Liên quan đến Đất (土)"], answer: 0 },
-            { target: "「疾病」", options: ["Liên quan đến Bệnh tật (疒)", "Liên quan đến Lúa (禾)", "Liên quan đến Lợn (豕)"], answer: 0 },
-            { target: "「絲綢」", options: ["Liên quan đến Tơ lụa (糸)", "Liên quan đến Nước (水)", "Liên quan đến Kim loại (金)"], answer: 0 },
-            { target: "「艦艇」", options: ["Liên quan đến Thuyền (舟)", "Liên quan đến Chim (隹)", "Liên quan đến Hang động (穴)"], answer: 0 },
-            { target: "「蜘蛛」", options: ["Liên quan đến Côn trùng (虫)", "Liên quan đến Thú dữ (豸)", "Liên quan đến Chim (隹)"], answer: 0 },
-            { target: "「詞語」", options: ["Liên quan đến Lời nói (言)", "Liên quan đến Tiền bạc (貝)", "Liên quan đến Bước đi (辶)"], answer: 0 },
-            { target: "「財富」", options: ["Liên quan đến Tiền bạc/Vỏ sò (貝)", "Liên quan đến Làng mạc (邑)", "Liên quan đến Quần áo (衣)"], answer: 0 },
-            { target: "「鋼鐵」", options: ["Liên quan đến Kim loại (金)", "Liên quan đến Gỗ (木)", "Liên quan đến Rượu (酉)"], answer: 0 },
-            { target: "「閱讀」", options: ["Liên quan đến Lời nói/Ngôn ngữ (言)", "Liên quan đến Cửa (門)", "Liên quan đến Thức ăn (食)"], answer: 0 },
-            { target: "「餐廳」", options: ["Liên quan đến Ăn uống (食)", "Liên quan đến Mái nhà (宀)", "Liên quan đến Đánh khẽ (支)"], answer: 0 },
-            { target: "「悲傷」", options: ["Liên quan đến Tâm lý/Cảm xúc (心)", "Liên quan đến Bệnh tật (疒)", "Liên quan đến Lực/Sức (力)"], answer: 0 },
-            { target: "「擁抱」", options: ["Liên quan đến Tay/Hành động (手)", "Liên quan đến Bước chân (彳)", "Liên quan đến Cơ thể (肉)"], answer: 0 },
-            { target: "「宇宙」", options: ["Liên quan đến Mái nhà/Không gian (宀)", "Liên quan đến Bát đĩa (皿)", "Liên quan đến Hang (穴)"], answer: 0 },
-            { target: "「稻麥」", options: ["Liên quan đến Lúa/Cây trồng (禾)", "Liên quan đến Gạo (米)", "Liên quan đến Cây gai (麻)"], answer: 0 },
-            { target: "「肌膚」", options: ["Liên quan đến Thịt/Cơ thể (肉)", "Liên quan đến Lông/Tóc (髟)", "Liên quan đến Quần áo (衣)"], answer: 0 },
-            { target: "「飛禽」", options: ["Liên quan đến Chim (隹)", "Liên quan đến Chó (犬)", "Liên quan đến Hổ (虍)"], answer: 0 }
+        5: [ 
+            { target: "「冰箱」🧊", options: ["Băng/Lạnh (冫) ❄️", "Lửa (火) 🔥", "Đất (土) ⛰️"], answer: 0 },
+            { target: "「疾病」🤒", options: ["Bệnh tật (疒) 🤒", "Lúa (禾) 🌾", "Lợn (豕) 🐖"], answer: 0 },
+            { target: "「絲綢」🧣", options: ["Tơ lụa (糸) 🧶", "Nước (水) 💧", "Kim loại (金) 🪙"], answer: 0 },
+            { target: "「艦艇」🚢", options: ["Thuyền (舟) ⛵", "Chim (隹) 🐦", "Hang động (穴) 🕳️"], answer: 0 },
+            { target: "「蜘蛛」🕷️", options: ["Côn trùng (虫) 🐛", "Thú dữ (豸) 🐆", "Chim (隹) 🐦"], answer: 0 },
+            { target: "「詞語」💬", options: ["Lời nói (言) 🗣️", "Tiền bạc (貝) 💰", "Bước đi (辶) 🚶"], answer: 0 },
+            { target: "「財富」💎", options: ["Tiền bạc (貝) 💰", "Làng mạc (邑) 🏘️", "Quần áo (衣) 👕"], answer: 0 },
+            { target: "「鋼鐵」⚙️", options: ["Kim loại (金) 🪙", "Gỗ (木) 🌳", "Rượu (酉) 🍷"], answer: 0 },
+            { target: "「閱讀」📖", options: ["Ngôn ngữ (言) 🗣️", "Cửa (門) 🚪", "Thức ăn (食) 🍚"], answer: 0 },
+            { target: "「餐廳」🍴", options: ["Ăn uống (食) 🍽️", "Mái nhà (宀) 🏠", "Đánh khẽ (支) 🏑"], answer: 0 },
+            { target: "「悲傷」😢", options: ["Cảm xúc (心) ❤️", "Bệnh tật (疒) 🤒", "Lực/Sức (力) 💪"], answer: 0 },
+            { target: "「擁抱」🫂", options: ["Tay/Hành động (手) ✋", "Bước chân (彳) 🚶", "Cơ thể (肉) 🥩"], answer: 0 },
+            { target: "「宇宙」🌌", options: ["Không gian (宀) 🏠", "Bát đĩa (皿) 🥣", "Hang (穴) 🕳️"], answer: 0 },
+            { target: "「稻麥」🌾", options: ["Cây trồng (禾) 🌾", "Gạo (米) 🍚", "Cây gai (麻) 🌿"], answer: 0 },
+            { target: "「肌膚」💆", options: ["Cơ thể (肉) 🥩", "Lông/Tóc (髟) 💇", "Quần áo (衣) 👕"], answer: 0 },
+            { target: "「飛禽」🦅", options: ["Chim (隹) 🐦", "Chó (犬) 🐕", "Hổ (虍) 🐯"], answer: 0 }
         ]
     };
 
     const difficultyTitles = {
-        1: { zh: "難度 1：冒險開始", vn: "Màn 1: Khởi đầu mạo hiểm" },
-        2: { zh: "難度 2：中級小怪", vn: "Màn 2: Quái vật trung cấp" },
-        3: { zh: "難度 3：高級護衛", vn: "Màn 3: Hộ vệ cao cấp" },
-        4: { zh: "難度 4：真假雙胞胎", vn: "Màn 4: Phân biệt chữ" },
-        5: { zh: "難度 5：大魔王盲猜！", vn: "Màn 5: Trùm cuối Đoán nghĩa!" }
+        1: { zh: "SYSTEM.STAGE_1 [基礎辨識]", vn: "Hệ thống: Màn 1 [Nhận biết]" },
+        2: { zh: "SYSTEM.STAGE_2 [結構掃描]", vn: "Hệ thống: Màn 2 [Quét cấu trúc]" },
+        3: { zh: "SYSTEM.STAGE_3 [部件重組]", vn: "Hệ thống: Màn 3 [Tái tổ hợp]" },
+        4: { zh: "SYSTEM.STAGE_4 [陷阱排除]", vn: "Hệ thống: Màn 4 [Loại bỏ bẫy]" },
+        5: { zh: "SYSTEM.STAGE_5 [語義推論]", vn: "Hệ thống: Màn 5 [Suy luận]" }
     };
 
-    // ==========================================
-    // 動態心流邏輯控制
-    // ==========================================
-    const TOTAL_QUESTIONS_PER_GAME = 15; 
-    const MAX_HEALTH = 3;
-    let currentQuestionCount = 0;
-    let correctCount = 0;
+    const QUESTIONS_PER_LEVEL = 10; 
+    const TOTAL_LEVELS = 5;
+    const MAX_HEALTH = 5;
+
+    let currentLevel = 1; 
+    let questionsAnsweredInLevel = 0;
+    let totalCorrectCount = 0;
     let currentHealth = MAX_HEALTH;
-    
-    let currentDifficulty = 1; 
-    let currentStreak = 0;     
+    let currentLevelQuestions = []; 
 
     function startGame() {
         initAudio(); 
         document.getElementById("screen-start").classList.add("hidden");
-        document.getElementById("pixel-scene-container").classList.remove("hidden");
-        document.getElementById("status-ui-container").classList.remove("hidden");
         document.getElementById("screen-game").classList.remove("hidden");
         
         const progressContainer = document.getElementById("progress-container-adventure");
         progressContainer.innerHTML = "";
-        for (let i = 0; i < TOTAL_QUESTIONS_PER_GAME; i++) {
+        for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
             const segment = document.createElement("div");
             segment.className = "pixel-progress-segment";
             segment.id = `progress-segment-${i}`;
             progressContainer.appendChild(segment);
         }
         
+        prepareLevel();
+    }
+
+    function prepareLevel() {
+        questionsAnsweredInLevel = 0;
+        let pool = [...questionBank[currentLevel]];
+        pool.sort(() => Math.random() - 0.5); 
+        currentLevelQuestions = pool.slice(0, QUESTIONS_PER_LEVEL); 
+        
         updatePixelUI();
         loadNextQuestion();
     }
 
     function updatePixelUI() {
+        document.getElementById("stage-badge").innerText = `訓練進度 ${currentLevel} / ${TOTAL_LEVELS}`;
+        
         for (let i = 1; i <= MAX_HEALTH; i++) {
             const heart = document.getElementById(`heart-${i}`);
             if (i <= currentHealth) {
@@ -395,9 +383,9 @@
             }
         }
         
-        for (let i = 0; i < TOTAL_QUESTIONS_PER_GAME; i++) {
+        for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
             const segment = document.getElementById(`progress-segment-${i}`);
-            if (i < currentQuestionCount) {
+            if (i < questionsAnsweredInLevel) {
                 segment.classList.add("active");
             } else {
                 segment.classList.remove("active");
@@ -406,71 +394,50 @@
     }
 
     function loadNextQuestion() {
-        if (currentQuestionCount >= TOTAL_QUESTIONS_PER_GAME) {
-            endGame();
-            return;
-        }
-
         updatePixelUI();
+        const currentQ = currentLevelQuestions[questionsAnsweredInLevel];
 
-        const pool = questionBank[currentDifficulty];
-        const randomQuestion = pool[Math.floor(Math.random() * pool.length)];
-
-        document.getElementById("q-title-zh").innerText = difficultyTitles[currentDifficulty].zh;
-        document.getElementById("q-title-vn").innerText = difficultyTitles[currentDifficulty].vn;
-        document.getElementById("q-target").innerText = randomQuestion.target;
+        document.getElementById("q-title-zh").innerText = difficultyTitles[currentLevel].zh;
+        document.getElementById("q-title-vn").innerText = difficultyTitles[currentLevel].vn;
+        document.getElementById("q-target").innerText = currentQ.target;
 
         const optionsContainer = document.getElementById("options-container");
         optionsContainer.innerHTML = "";
         
-        randomQuestion.options.forEach((opt, index) => {
+        currentQ.options.forEach((opt, index) => {
             const btn = document.createElement("button");
             btn.className = "btn";
             btn.innerHTML = opt;
-            btn.onclick = () => checkAnswer(index, randomQuestion.answer);
+            btn.onclick = () => checkAnswer(index, currentQ.answer);
             optionsContainer.appendChild(btn);
         });
     }
 
     function checkAnswer(selectedIndex, correctIndex) {
-        currentQuestionCount++; 
-
         if (selectedIndex === correctIndex) {
-            correctCount++;
-            currentStreak++;
+            totalCorrectCount++;
+            questionsAnsweredInLevel++;
             
-            let feedbackZh = "答對了！噴出金幣！ 🌟";
-            let feedbackVn = "Đúng rồi! Tuyệt vời! ✨";
-            
-            if (currentStreak >= 3 && currentDifficulty < 5) {
-                currentDifficulty++;
-                currentStreak = 0; 
+            if (questionsAnsweredInLevel >= QUESTIONS_PER_LEVEL) {
                 playLevelUpSound(); 
-                
-                if (currentDifficulty === 5) {
-                    feedbackZh = "警告！大魔王出現了！ 🐉";
-                    feedbackVn = "Cảnh báo! Trùm cuối xuất hiện! 🐉";
+                if (currentLevel === TOTAL_LEVELS) {
+                    showFeedback(true, "數據同步完成！🎉", "Đồng bộ dữ liệu hoàn tất!");
                 } else {
-                    feedbackZh = "太厲害了！進入下一個場景！ 🚀";
-                    feedbackVn = "Quá giỏi! Chuyển cảnh tiếp theo! 🚀";
+                    showFeedback(true, "階段完成！系統修復💖", "Qua màn! Phục hồi hệ thống!");
                 }
             } else {
                 playCorrectSound(); 
+                showFeedback(true, "解析正確！ 🌟", "Phân tích chính xác! ✨");
             }
-
-            showFeedback(true, feedbackZh, feedbackVn);
         } else {
             playWrongSound(); 
-            currentStreak = 0;
-            currentDifficulty = 1;
             currentHealth--;
             
             if (currentHealth <= 0) {
                 setTimeout(gameOver, 800); 
                 return;
             }
-            
-            showFeedback(false, "哎呀！被怪物攻擊！降回基礎", "Ôi! Bị quái vật tấn công! Trở lại cơ bản");
+            showFeedback(false, "解析錯誤！核心受損", "Phân tích sai! Lõi bị hỏng");
         }
     }
 
@@ -484,35 +451,43 @@
         document.getElementById("fb-vn").innerText = textVn;
 
         if (isSuccess) {
-            icon.innerText = "🌟";
-            btn.innerText = "下一題 / Câu tiếp theo";
-            btn.style.backgroundColor = "var(--primary-color)";
+            icon.innerText = "✅";
+            document.getElementById("fb-zh").style.color = "var(--success-color)";
+            document.getElementById("fb-zh").style.textShadow = "0 0 10px var(--success-color)";
         } else {
-            icon.innerText = "💥";
-            btn.innerText = "繼續努力 / Tiếp tục cố gắng";
-            btn.style.backgroundColor = "var(--danger-color)";
+            icon.innerText = "⚠️";
+            document.getElementById("fb-zh").style.color = "var(--danger-color)";
+            document.getElementById("fb-zh").style.textShadow = "0 0 10px var(--danger-color)";
         }
     }
 
     function closeFeedback() {
         document.getElementById("feedback-modal").classList.add("hidden");
-        loadNextQuestion();
+        
+        if (questionsAnsweredInLevel >= QUESTIONS_PER_LEVEL) {
+            currentLevel++;
+            if (currentLevel > TOTAL_LEVELS) {
+                endGame();
+            } else {
+                currentHealth = MAX_HEALTH; 
+                prepareLevel(); 
+            }
+        } else {
+            loadNextQuestion();
+        }
     }
 
     function gameOver() {
         document.getElementById("feedback-modal").classList.add("hidden");
         document.getElementById("screen-game").classList.add("hidden");
-        document.getElementById("pixel-scene-container").classList.add("hidden");
-        document.getElementById("status-ui-container").classList.add("hidden");
         document.getElementById("screen-gameover").classList.remove("hidden");
     }
 
     function endGame() {
         playLevelUpSound(); 
         document.getElementById("screen-game").classList.add("hidden");
-        document.getElementById("status-ui-container").classList.add("hidden");
         document.getElementById("screen-end").classList.remove("hidden");
-        document.getElementById("final-score").innerText = `答對: ${correctCount} / ${TOTAL_QUESTIONS_PER_GAME}`;
+        document.getElementById("final-score").innerText = `總答對: ${totalCorrectCount} / 50`;
     }
 </script>
 
