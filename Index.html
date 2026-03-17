@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>華語部首闖關遊戲 | Trò chơi Bộ thủ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FFB07F;
+            --secondary-color: #FFDFB9;
+            --bg-color: #FFF9F1;
+            --text-color: #4A4A4A;
+            --success-color: #A3D897;
+            --wrong-color: #FF9B9B;
+        }
+
+        body {
+            font-family: 'Mulish', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        #app {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            padding: 30px 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .hidden { display: none !important; }
+
+        h1 { font-size: 28px; color: #FF8C42; margin-bottom: 5px; }
+        .subtitle { font-size: 16px; color: #888; margin-bottom: 20px; }
+
+        /* 進度條 */
+        .progress-container {
+            width: 100%;
+            background-color: #EEE;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 15px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* 遊戲區域 */
+        .question-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .question-subtitle { font-size: 18px; color: #666; margin-bottom: 20px; }
+        .target-item {
+            font-size: 60px;
+            font-weight: 900;
+            color: var(--primary-color);
+            margin: 20px 0;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: var(--secondary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 20px;
+            font-family: inherit;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:hover { background-color: var(--primary-color); color: white; }
+        
+        /* 第4關點擊配對專用樣式 */
+        .l4-radicals { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .l4-radical-btn {
+            font-size: 28px; padding: 10px 20px; border-radius: 10px;
+            background: #EEE; border: 2px solid #CCC; cursor: pointer;
+        }
+        .l4-radical-btn.selected { background: var(--primary-color); color: white; border-color: #FF8C42; transform: scale(1.1); }
+        .l4-radical-btn.matched { visibility: hidden; }
+
+        .l4-categories { display: flex; flex-direction: column; gap: 15px; }
+        .l4-category-box {
+            border: 3px dashed var(--primary-color);
+            border-radius: 15px;
+            padding: 15px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            cursor: pointer;
+            background: #FFF5EC;
+        }
+        .l4-category-box:hover { background: var(--secondary-color); }
+        .l4-category-title { font-weight: bold; font-size: 20px; width: 100%; margin-bottom: 5px;}
+        .placed-radical { font-size: 24px; font-weight: bold; color: var(--primary-color); }
+
+        /* 回饋彈跳視窗 */
+        #feedback-modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-radius: 20px; z-index: 10;
+        }
+        .feedback-icon { font-size: 80px; margin-bottom: 10px; }
+        .feedback-text-zh { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+        .feedback-text-vn { font-size: 20px; color: #666; margin-bottom: 20px; }
+        .next-btn { background-color: var(--success-color); border: none; color: white; width: 80%; }
+        
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="progress-container hidden" id="progress-wrapper">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <div id="screen-start">
+        <h1>部首闖關遊戲</h1>
+        <div class="subtitle">Trò chơi Bộ thủ</div>
+        <div class="target-item">🎮</div>
+        <button class="btn" onclick="startGame()">開始遊戲<br><span style="font-size: 14px; font-weight: normal;">Bắt đầu</span></button>
+    </div>
+
+    <div id="screen-game" class="hidden">
+        <div class="question-title" id="q-title-zh"></div>
+        <div class="question-subtitle" id="q-title-vn"></div>
+        <div class="target-item" id="q-target"></div>
+        <div id="options-container"></div>
+    </div>
+
+    <div id="screen-level4" class="hidden">
+        <div class="question-title">第四關：部首分類</div>
+        <div class="question-subtitle">Nhấp vào bộ thủ, sau đó nhấp vào nhóm đúng</div>
+        <div class="l4-radicals" id="l4-radicals-container"></div>
+        <div class="l4-categories" id="l4-categories-container"></div>
+    </div>
+
+    <div id="screen-end" class="hidden">
+        <h1>恭喜通關！</h1>
+        <div class="subtitle">Chúc mừng bạn đã hoàn thành!</div>
+        <div class="target-item">🏆</div>
+        <button class="btn" onclick="location.reload()">再玩一次<br><span style="font-size: 14px; font-weight: normal;">Chơi lại</span></button>
+    </div>
+
+    <div id="feedback-modal" class="hidden">
+        <div class="feedback-icon" id="fb-icon"></div>
+        <div class="feedback-text-zh" id="fb-zh"></div>
+        <div class="feedback-text-vn" id="fb-vn"></div>
+        <button class="btn next-btn" id="fb-btn" onclick="closeFeedback()">繼續 / Tiếp tục</button>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // 題庫設定區 (您可以在此處擴充至 50 個部首)
+    // ==========================================
+    
+    // 第一關：認識部首 (選意思)
+    const level1Data = [
+        { target: "氵", options: ["水 (Nước)", "火 (Lửa)", "木 (Cây)"], answer: 0 },
+        { target: "木", options: ["金 (Vàng)", "木 (Cây)", "土 (Đất)"], answer: 1 },
+        { target: "扌", options: ["手 (Tay)", "腳 (Chân)", "口 (Miệng)"], answer: 0 }
+    ];
+
+    // 第二關：找部首 (選正確部首)
+    const level2Data = [
+        { target: "海", options: ["氵", "每", "母"], answer: 0 },
+        { target: "林", options: ["木", "十", "八"], answer: 0 },
+        { target: "打", options: ["丁", "扌", "一"], answer: 1 }
+    ];
+
+    // 第三關：用部首造字 (給部首選字)
+    const level3Data = [
+        { target: "氵", options: ["河 (Sông)", "跑 (Chạy)", "樹 (Cây)"], answer: 0 },
+        { target: "艹", options: ["花 (Hoa)", "狗 (Chó)", "椅 (Ghế)"], answer: 0 }
+    ];
+
+    // 第四關：部首分類 (點擊配對)
+    const level4Data = {
+        radicals: [
+            { id: "r1", text: "氵", cat: "water" },
+            { id: "r2", text: "木", cat: "plant" },
+            { id: "r3", text: "艹", cat: "plant" },
+            { id: "r4", text: "扌", cat: "action" }
+        ],
+        categories: [
+            { id: "water", zh: "水", vn: "Nước" },
+            { id: "plant", zh: "植物", vn: "Thực vật" },
+            { id: "action", zh: "動作", vn: "Hành động" }
+        ]
+    };
+
+    // ==========================================
+    // 遊戲邏輯控制區
+    // ==========================================
+
+    let currentLevel = 1;
+    let currentQuestionIndex = 0;
+    let totalQuestions = level1Data.length + level2Data.length + level3Data.length + 1; // +1 是第四關
+    let questionsAnswered = 0;
+    
+    // 關卡標題對照表
+    const levelTitles = {
+        1: { zh: "第一關：認識部首", vn: "Màn 1: Nhận biết bộ thủ" },
+        2: { zh: "第二關：找部首", vn: "Màn 2: Tìm bộ thủ" },
+        3: { zh: "第三關：用部首造字", vn: "Màn 3: Tạo chữ từ bộ thủ" }
+    };
+
+    function updateProgress() {
+        const percent = (questionsAnswered / totalQuestions) * 100;
+        document.getElementById("progress-bar").style.width = percent + "%";
+    }
+
+    function startGame() {
+        document.getElementById("screen-start").classList.add("hidden");
+        document.getElementById("progress-wrapper").classList.remove("hidden");
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        document.getElementById("screen-game").classList.remove("hidden");
+        document.getElementById("screen-level4").classList.add("hidden");
+        
+        let currentData;
+        if (currentLevel === 1) currentData = level1Data;
+        else if (currentLevel === 2) currentData = level2Data;
+        else if (currentLevel === 3) currentData = level3Data;
+        else { loadLevel4(); return; }
+
+        if (currentQuestionIndex >= currentData.length) {
+            currentLevel++;
+            currentQuestionIndex = 0;
+            loadQuestion();
+            return;
+        }
+
+        const q = currentData[currentQuestionIndex];
+        document.getElementById("q-title-zh").innerText = levelTitles[currentLevel].zh;
+        document.getElementById("q-title-vn").innerText = levelTitles[currentLevel].vn;
+        document.getElementById("q-target").innerText = q.target;
+
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
+        
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.className = "btn";
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAnswer(index, q.answer);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedIndex, correctIndex) {
+        if (selectedIndex === correctIndex) {
+            showFeedback(true, "答對了！", "Đúng rồi! Tuyệt vời!");
+            questionsAnswered++;
+            updateProgress();
+            currentQuestionIndex++;
+        } else {
+            showFeedback(false, "哎呀，不對喔！", "Ôi, thử lại lần nữa nhé!");
+        }
+    }
+
+    // --- 第四關專用邏輯 ---
+    let selectedRadicalId = null;
+    let l4MatchedCount = 0;
+
+    function loadLevel4() {
+        document.getElementById("screen-game").classList.add("hidden");
+        document.getElementById("screen-level4").classList.remove("hidden");
+        
+        const radContainer = document.getElementById("l4-radicals-container");
+        const catContainer = document.getElementById("l4-categories-container");
+        radContainer.innerHTML = "";
+        catContainer.innerHTML = "";
+        l4MatchedCount = 0;
+
+        // 渲染待選部首
+        level4Data.radicals.forEach(rad => {
+            const btn = document.createElement("div");
+            btn.className = "l4-radical-btn";
+            btn.id = "rad-" + rad.id;
+            btn.innerText = rad.text;
+            btn.onclick = () => selectRadical(btn, rad.cat);
+            radContainer.appendChild(btn);
+        });
+
+        // 渲染分類箱
+        level4Data.categories.forEach(cat => {
+            const box = document.createElement("div");
+            box.className = "l4-category-box";
+            box.onclick = () => dropToCategory(cat.id, box);
+            
+            const title = document.createElement("div");
+            title.className = "l4-category-title";
+            title.innerText = `${cat.zh} (${cat.vn})`;
+            
+            box.appendChild(title);
+            catContainer.appendChild(box);
+        });
+    }
+
+    function selectRadical(btnElement, category) {
+        // 清除其他選取狀態
+        document.querySelectorAll(".l4-radical-btn").forEach(el => el.classList.remove("selected"));
+        btnElement.classList.add("selected");
+        selectedRadicalId = { element: btnElement, correctCat: category, text: btnElement.innerText };
+    }
+
+    function dropToCategory(categoryId, boxElement) {
+        if (!selectedRadicalId) return; // 還沒選部首
+
+        if (selectedRadicalId.correctCat === categoryId) {
+            // 配對成功
+            selectedRadicalId.element.classList.add("matched");
+            
+            const placed = document.createElement("span");
+            placed.className = "placed-radical";
+            placed.innerText = selectedRadicalId.text;
+            boxElement.appendChild(placed);
+            
+            selectedRadicalId = null;
+            l4MatchedCount++;
+            
+            if (l4MatchedCount === level4Data.radicals.length) {
+                questionsAnswered++;
+                updateProgress();
+                setTimeout(() => {
+                    document.getElementById("screen-level4").classList.add("hidden");
+                    document.getElementById("screen-end").classList.remove("hidden");
+                }, 1000);
+            }
+        } else {
+            // 配對失敗
+            selectedRadicalId.element.classList.remove("selected");
+            selectedRadicalId = null;
+            showFeedback(false, "分類錯誤喔！", "Phân loại sai rồi, thử lại nhé!");
+        }
+    }
+
+    // --- 回饋視窗邏輯 ---
+    let isFeedbackSuccess = false;
+
+    function showFeedback(isSuccess, textZh, textVn) {
+        isFeedbackSuccess = isSuccess;
+        const modal = document.getElementById("feedback-modal");
+        const icon = document.getElementById("fb-icon");
+        const btn = document.getElementById("fb-btn");
+        
+        modal.classList.remove("hidden");
+        document.getElementById("fb-zh").innerText = textZh;
+        document.getElementById("fb-vn").innerText = textVn;
+
+        if (isSuccess) {
+            icon.innerText = "🌟";
+            btn.innerText = "下一題 / Câu tiếp theo";
+            btn.style.backgroundColor = "var(--success-color)";
+        } else {
+            icon.innerText = "💪";
+            btn.innerText = "再試一次 / Thử lại";
+            btn.style.backgroundColor = "var(--wrong-color)";
+        }
+    }
+
+    function closeFeedback() {
+        document.getElementById("feedback-modal").classList.add("hidden");
+        if (isFeedbackSuccess && currentLevel <= 3) {
+            loadQuestion();
+        }
+    }
+</script>
+
+</body>
+</html>
