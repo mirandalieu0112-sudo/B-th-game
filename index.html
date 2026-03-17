@@ -7,13 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* 科技幻夜 VR 配色 */
             --primary-color: #0088FF; 
             --secondary-color: #9933FF; 
             --bg-dark: #050510;
             --text-color: #FFFFFF;
             --danger-color: #FF3366;
             --success-color: #00FF66;
+            --pinyin-color: #00FFFF; /* 拼音專屬螢光青色 */
         }
 
         body {
@@ -22,7 +22,6 @@
             background-color: var(--bg-dark);
             color: var(--text-color);
             overflow: hidden; 
-            /* VR 空間網格背景 */
             background-image: 
                 linear-gradient(rgba(0, 136, 255, 0.1) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 136, 255, 0.1) 1px, transparent 1px);
@@ -32,7 +31,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            perspective: 1000px; /* VR 3D 視角核心 */
+            perspective: 1000px; 
         }
 
         .vr-reticle {
@@ -42,7 +41,6 @@
             box-shadow: 0 0 10px var(--success-color);
         }
 
-        /* VR 全息浮空面板 */
         #app {
             background: rgba(10, 10, 25, 0.6); 
             backdrop-filter: blur(12px); 
@@ -55,7 +53,6 @@
             text-align: center;
             border-radius: 15px;
             box-shadow: 0 0 30px rgba(0, 136, 255, 0.3), inset 0 0 20px rgba(153, 51, 255, 0.2);
-            /* 調整為稍微俯視的科技控制台角度 */
             transform: rotateX(8deg) translateY(-2%);
             transition: transform 0.3s ease-out;
         }
@@ -67,7 +64,6 @@
         h1 { font-size: 26px; color: var(--success-color); margin-bottom: 5px; font-weight: 900; text-shadow: 0 0 10px rgba(0,255,102,0.5);}
         .subtitle { font-size: 15px; color: #AACCFF; margin-bottom: 20px; }
 
-        /* 進度條與生命值 */
         .status-ui { 
             display: flex; justify-content: space-between; align-items: center; 
             margin-bottom: 20px; border-bottom: 1px solid rgba(0, 136, 255, 0.3); padding-bottom: 15px;
@@ -88,15 +84,22 @@
         .pixel-progress-segment { width: 100%; height: 6px; background-color: rgba(255,255,255,0.1); border-radius: 3px;}
         .pixel-progress-segment.active { background-color: var(--secondary-color); box-shadow: 0 0 8px var(--secondary-color);}
 
-        /* 遊戲區域 */
         .question-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: var(--primary-color); text-shadow: 0 0 5px rgba(0,136,255,0.5);}
         .question-subtitle { font-size: 14px; color: #88BBAA; margin-bottom: 10px; }
+        
         .target-item { 
-            font-size: 65px; font-weight: 900; color: #FFFFFF; 
-            margin: 15px 0; text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--secondary-color); 
+            font-size: 60px; font-weight: 900; color: #FFFFFF; 
+            margin: 10px 0 0 0; text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--secondary-color); 
         }
 
-        /* 預設通用按鈕 (開始/重玩等) */
+        /* 拼音專屬顯示樣式 */
+        .target-pinyin {
+            font-size: 22px; font-weight: bold; color: var(--pinyin-color);
+            margin-bottom: 15px; letter-spacing: 1.5px;
+            font-family: 'Arial', sans-serif;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+        }
+
         .btn {
             display: block; width: 100%; 
             background: rgba(10, 10, 25, 0.8); 
@@ -108,43 +111,15 @@
         .btn:active { transform: scale(0.96); }
         .btn:hover { background: rgba(0, 136, 255, 0.2); box-shadow: 0 0 25px rgba(0, 136, 255, 0.6); }
 
-        /* --- 遊戲選項專屬顏色 (紅、黃、綠) --- */
-        
-        /* 選項 1：霓虹紅 */
-        #options-container .btn:nth-child(1) {
-            border-color: #FF3366;
-            box-shadow: 0 0 15px rgba(255, 51, 102, 0.3), inset 0 0 10px rgba(255, 51, 102, 0.1);
-        }
-        #options-container .btn:nth-child(1):hover {
-            background: rgba(255, 51, 102, 0.2);
-            box-shadow: 0 0 25px rgba(255, 51, 102, 0.6), inset 0 0 15px rgba(255, 51, 102, 0.3);
-            text-shadow: 0 0 8px #FF3366;
-        }
+        #options-container .btn:nth-child(1) { border-color: #FF3366; box-shadow: 0 0 15px rgba(255, 51, 102, 0.3), inset 0 0 10px rgba(255, 51, 102, 0.1); }
+        #options-container .btn:nth-child(1):hover { background: rgba(255, 51, 102, 0.2); box-shadow: 0 0 25px rgba(255, 51, 102, 0.6), inset 0 0 15px rgba(255, 51, 102, 0.3); text-shadow: 0 0 8px #FF3366; }
 
-        /* 選項 2：星芒黃 */
-        #options-container .btn:nth-child(2) {
-            border-color: #FFCC00;
-            box-shadow: 0 0 15px rgba(255, 204, 0, 0.3), inset 0 0 10px rgba(255, 204, 0, 0.1);
-        }
-        #options-container .btn:nth-child(2):hover {
-            background: rgba(255, 204, 0, 0.2);
-            box-shadow: 0 0 25px rgba(255, 204, 0, 0.6), inset 0 0 15px rgba(255, 204, 0, 0.3);
-            text-shadow: 0 0 8px #FFCC00;
-        }
+        #options-container .btn:nth-child(2) { border-color: #FFCC00; box-shadow: 0 0 15px rgba(255, 204, 0, 0.3), inset 0 0 10px rgba(255, 204, 0, 0.1); }
+        #options-container .btn:nth-child(2):hover { background: rgba(255, 204, 0, 0.2); box-shadow: 0 0 25px rgba(255, 204, 0, 0.6), inset 0 0 15px rgba(255, 204, 0, 0.3); text-shadow: 0 0 8px #FFCC00; }
 
-        /* 選項 3：量子綠 */
-        #options-container .btn:nth-child(3) {
-            border-color: #00FF66;
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3), inset 0 0 10px rgba(0, 255, 102, 0.1);
-        }
-        #options-container .btn:nth-child(3):hover {
-            background: rgba(0, 255, 102, 0.2);
-            box-shadow: 0 0 25px rgba(0, 255, 102, 0.6), inset 0 0 15px rgba(0, 255, 102, 0.3);
-            text-shadow: 0 0 8px #00FF66;
-        }
-        /* --------------------------------- */
+        #options-container .btn:nth-child(3) { border-color: #00FF66; box-shadow: 0 0 15px rgba(0, 255, 102, 0.3), inset 0 0 10px rgba(0, 255, 102, 0.1); }
+        #options-container .btn:nth-child(3):hover { background: rgba(0, 255, 102, 0.2); box-shadow: 0 0 25px rgba(0, 255, 102, 0.6), inset 0 0 15px rgba(0, 255, 102, 0.3); text-shadow: 0 0 8px #00FF66; }
         
-        /* 回饋彈跳視窗 */
         #feedback-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 5, 16, 0.85); backdrop-filter: blur(15px);
@@ -187,7 +162,10 @@
 
         <div class="question-title" id="q-title-zh"></div>
         <div class="question-subtitle" id="q-title-vn"></div>
+        
         <div class="target-item" id="q-target"></div>
+        <div class="target-pinyin" id="q-pinyin"></div>
+        
         <div id="options-container"></div>
     </div>
 
@@ -233,96 +211,99 @@
     function playWrongSound() { initAudio(); playTone(150, 'sawtooth', 0.3, 0.2); }
     function playLevelUpSound() { initAudio(); playTone(261.63, 'square', 0.1); setTimeout(() => playTone(392.00, 'square', 0.1), 150); setTimeout(() => playTone(523.25, 'square', 0.3), 300); }
 
+    // ==========================================
+    // 80題專屬題庫 (加入拼音，移除選項Emoji)
+    // ==========================================
     const questionBank = {
         1: [ 
-            { target: "人 🧍", options: ["người (Người) 🧍", "dao (Dao) 🔪", "vách núi (Vách núi) ⛰️"], answer: 0 },
-            { target: "刀 🔪", options: ["sức (Sức) 💪", "dao (Dao) 🔪", "bước dài (Bước dài) 🚶"], answer: 1 },
-            { target: "力 💪", options: ["sức (Sức) 💪", "miệng (Miệng) 👄", "tay (Tay) ✋"], answer: 0 },
-            { target: "宀 🏠", options: ["mái che (Mái che) ⛺", "mái nhà (Mái nhà) 🏠", "hang (Hang) 🕳️"], answer: 1 },
-            { target: "心 ❤️", options: ["tim, lòng (Tim/Tình cảm) ❤️", "mặt trăng (Mặt trăng) 🌙", "thịt (Thịt) 🥩"], answer: 0 },
-            { target: "手 ✋", options: ["tay (Tay) ✋", "nói (Nói) 🗣️", "cây (Cây) 🌳"], answer: 0 },
-            { target: "木 🌳", options: ["nước (Nước) 💧", "cây (Cây) 🌳", "lúa (Lúa) 🌾"], answer: 1 },
-            { target: "水 💧", options: ["nước (Nước) 💧", "rượu (Rượu) 🍷", "côn trùng (Côn trùng) 🐛"], answer: 0 },
-            { target: "犬 🐕", options: ["trâu, bò (Trâu bò) 🐄", "chó (Chó) 🐕", "heo (Heo) 🐖"], answer: 1 },
-            { target: "疒 🤒", options: ["bệnh (Bệnh) 🤒", "thịt (Thịt) 🥩", "gò đất (Gò đất) ⛰️"], answer: 0 },
-            { target: "糸 🧶", options: ["tơ (Tơ lụa) 🧶", "gạo (Gạo) 🍚", "lúa (Lúa) 🌾"], answer: 0 },
-            { target: "肉 🥩", options: ["thịt (Thịt) 🥩", "quần áo (Quần áo) 👕", "mặt trăng (Mặt trăng) 🌙"], answer: 0 },
-            { target: "舟 ⛵", options: ["xe (Xe cộ) 🚗", "thuyền (Thuyền) ⛵", "chim (Chim) 🐦"], answer: 1 },
-            { target: "衣 👕", options: ["quần áo (Quần áo) 👕", "lời nói (Lời nói) 🗣️", "cửa (Cửa) 🚪"], answer: 0 },
-            { target: "貝 🐚", options: ["vỏ sò, tiền (Vỏ sò/Tiền) 💰", "kim loại (Kim loại) 🪙", "ngọc (Ngọc) 💎"], answer: 0 },
-            { target: "食 🍚", options: ["ăn (Ăn) 🍽️", "uống (Uống) 🥤", "rượu (Rượu) 🍷"], answer: 0 }
+            { target: "人 🧍", pinyin: "rén", options: ["người (Người)", "dao (Dao)", "vách núi (Vách núi)"], answer: 0 },
+            { target: "刀 🔪", pinyin: "dāo", options: ["sức (Sức)", "dao (Dao)", "bước dài (Bước dài)"], answer: 1 },
+            { target: "力 💪", pinyin: "lì", options: ["sức (Sức)", "miệng (Miệng)", "tay (Tay)"], answer: 0 },
+            { target: "宀 🏠", pinyin: "mián", options: ["mái che (Mái che)", "mái nhà (Mái nhà)", "hang (Hang)"], answer: 1 },
+            { target: "心 ❤️", pinyin: "xīn", options: ["tim, lòng (Tim/Tình cảm)", "mặt trăng (Mặt trăng)", "thịt (Thịt)"], answer: 0 },
+            { target: "手 ✋", pinyin: "shǒu", options: ["tay (Tay)", "nói (Nói)", "cây (Cây)"], answer: 0 },
+            { target: "木 🌳", pinyin: "mù", options: ["nước (Nước)", "cây (Cây)", "lúa (Lúa)"], answer: 1 },
+            { target: "水 💧", pinyin: "shuǐ", options: ["nước (Nước)", "rượu (Rượu)", "côn trùng (Côn trùng)"], answer: 0 },
+            { target: "犬 🐕", pinyin: "quǎn", options: ["trâu, bò (Trâu bò)", "chó (Chó)", "heo (Heo)"], answer: 1 },
+            { target: "疒 🤒", pinyin: "chuáng", options: ["bệnh (Bệnh)", "thịt (Thịt)", "gò đất (Gò đất)"], answer: 0 },
+            { target: "糸 🧶", pinyin: "mì", options: ["tơ (Tơ lụa)", "gạo (Gạo)", "lúa (Lúa)"], answer: 0 },
+            { target: "肉 🥩", pinyin: "ròu", options: ["thịt (Thịt)", "quần áo (Quần áo)", "mặt trăng (Mặt trăng)"], answer: 0 },
+            { target: "舟 ⛵", pinyin: "zhōu", options: ["xe (Xe cộ)", "thuyền (Thuyền)", "chim (Chim)"], answer: 1 },
+            { target: "衣 👕", pinyin: "yī", options: ["quần áo (Quần áo)", "lời nói (Lời nói)", "cửa (Cửa)"], answer: 0 },
+            { target: "貝 🐚", pinyin: "bèi", options: ["vỏ sò, tiền (Vỏ sò/Tiền)", "kim loại (Kim loại)", "ngọc (Ngọc)"], answer: 0 },
+            { target: "食 🍚", pinyin: "shí", options: ["ăn (Ăn)", "uống (Uống)", "rượu (Rượu)"], answer: 0 }
         ],
         2: [ 
-            { target: "你 (Bạn) 🧍", options: ["人 (亻) 🧍", "尔", "小"], answer: 0 },
-            { target: "冰 (Đá, lạnh) 🧊", options: ["水 💧", "冫 ❄️", "人 🧍"], answer: 1 },
-            { target: "吃 (Ăn) 🍽️", options: ["口 👄", "乞", "乙"], answer: 0 },
-            { target: "好 (Tốt) 👍", options: ["子 👶", "女 👩", "一"], answer: 1 },
-            { target: "家 (Nhà) 🏠", options: ["宀 🏠", "豕 🐖", "一"], answer: 0 },
-            { target: "想 (Nhớ, nghĩ) 🤔", options: ["木 🌳", "目 👀", "心 ❤️"], answer: 2 },
-            { target: "打 (Đánh) 🥊", options: ["手 (扌) ✋", "丁", "一"], answer: 0 },
-            { target: "林 (Rừng) 🌲", options: ["木 🌳", "八", "十"], answer: 0 },
-            { target: "海 (Biển) 🌊", options: ["水 (氵) 💧", "每", "母"], answer: 0 },
-            { target: "狗 (Chó) 🐕", options: ["犬 (犭) 🐕", "句", "口 👄"], answer: 0 },
-            { target: "病 (Bệnh) 🤒", options: ["疒 🤒", "丙", "一"], answer: 0 },
-            { target: "紅 (Đỏ) 🔴", options: ["糸 (糹) 🧶", "工", "一"], answer: 0 },
-            { target: "胖 (Béo) 🤰", options: ["肉 (月) 🥩", "半", "十"], answer: 0 },
-            { target: "說 (Nói) 🗣️", options: ["言 🗣️", "兌", "口 👄"], answer: 0 },
-            { target: "錢 (Tiền) 💰", options: ["金 (釒) 🪙", "戔", "一"], answer: 0 },
-            { target: "飯 (Cơm) 🍚", options: ["食 (飠) 🍚", "反", "人 🧍"], answer: 0 }
+            { target: "你 (Bạn) 🧍", pinyin: "nǐ", options: ["人 (亻)", "尔", "小"], answer: 0 },
+            { target: "冰 (Đá, lạnh) 🧊", pinyin: "bīng", options: ["水 (氵)", "冫", "人 (亻)"], answer: 1 },
+            { target: "吃 (Ăn) 🍽️", pinyin: "chī", options: ["口", "乞", "乙"], answer: 0 },
+            { target: "好 (Tốt) 👍", pinyin: "hǎo", options: ["子", "女", "一"], answer: 1 },
+            { target: "家 (Nhà) 🏠", pinyin: "jiā", options: ["宀", "豕", "一"], answer: 0 },
+            { target: "想 (Nhớ, nghĩ) 🤔", pinyin: "xiǎng", options: ["木", "目", "心"], answer: 2 },
+            { target: "打 (Đánh) 🥊", pinyin: "dǎ", options: ["手 (扌)", "丁", "一"], answer: 0 },
+            { target: "林 (Rừng) 🌲", pinyin: "lín", options: ["木", "八", "十"], answer: 0 },
+            { target: "海 (Biển) 🌊", pinyin: "hǎi", options: ["水 (氵)", "每", "母"], answer: 0 },
+            { target: "狗 (Chó) 🐕", pinyin: "gǒu", options: ["犬 (犭)", "句", "口"], answer: 0 },
+            { target: "病 (Bệnh) 🤒", pinyin: "bìng", options: ["疒", "丙", "一"], answer: 0 },
+            { target: "紅 (Đỏ) 🔴", pinyin: "hóng", options: ["糸 (糹)", "工", "一"], answer: 0 },
+            { target: "胖 (Béo) 🤰", pinyin: "pàng", options: ["肉 (月)", "半", "十"], answer: 0 },
+            { target: "說 (Nói) 🗣️", pinyin: "shuō", options: ["言", "兌", "口"], answer: 0 },
+            { target: "錢 (Tiền) 💰", pinyin: "qián", options: ["金 (釒)", "戔", "一"], answer: 0 },
+            { target: "飯 (Cơm) 🍚", pinyin: "fàn", options: ["食 (飠)", "反", "人"], answer: 0 }
         ],
         3: [ 
-            { target: "亻+ 尔 = ? 🧍", options: ["你 (Bạn) 👉", "他 (Anh ấy) 👦", "休 (Nghỉ ngơi) 🛌"], answer: 0 },
-            { target: "女 + 子 = ? 👩‍👦", options: ["好 (Tốt) 👍", "媽 (Mẹ) 👩", "姐 (Chị) 👧"], answer: 0 },
-            { target: "宀 + 豕(heo) = ? 🐖🏠", options: ["家 (Nhà) 🏠", "字 (Chữ) 🔤", "安 (An toàn) 🛡️"], answer: 0 },
-            { target: "木 + 木 = ? 🌳🌳", options: ["林 (Rừng) 🌲", "樹 (Cây) 🌳", "本 (Bản) 📘"], answer: 0 },
-            { target: "氵+ 每 = ? 💧🌊", options: ["海 (Biển) 🌊", "河 (Sông) 🏞️", "洗 (Rửa) 🧼"], answer: 0 },
-            { target: "犭+ 句 = ? 🐕", options: ["狗 (Chó) 🐕", "貓 (Mèo) 🐈", "豬 (Heo) 🐖"], answer: 0 },
-            { target: "疒 + 丙 = ? 🤒", options: ["病 (Bệnh) 🤒", "痛 (Đau) 🤕", "瘦 (Gầy) 🧍"], answer: 0 },
-            { target: "糹+ 工 = ? 🧶🔴", options: ["紅 (Đỏ) 🔴", "綠 (Xanh) 🟢", "給 (Cho) 🎁"], answer: 0 },
-            { target: "衤+ 羊 = ? 👕🐑", options: ["裙 (Váy) 👗", "褲 (Quần) 👖", "裝 (Trang phục) 👔"], answer: 0 },
-            { target: "言 + 兌 = ? 🗣️", options: ["說 (Nói) 🗣️", "請 (Mời) 🙏", "語 (Ngôn ngữ) 💬"], answer: 0 },
-            { target: "貝 + 賣 = ? 💰", options: ["買 (Mua) 🛒", "貴 (Đắt) 💎", "費 (Phí) 💵"], answer: 0 },
-            { target: "辶+ 斤 = ? 🚶", options: ["近 (Gần) 📍", "遠 (Xa) 🔭", "送 (Tặng) 🎁"], answer: 0 },
-            { target: "釒+ 戔 = ? 🪙", options: ["錢 (Tiền) 💰", "銀 (Bạc) 🥈", "錯 (Sai) ❌"], answer: 0 },
-            { target: "門 + 口 = ? 🚪👄", options: ["問 (Hỏi) ❓", "開 (Mở) 👐", "間 (Gian/Phòng) 🛋️"], answer: 0 },
-            { target: "飠+ 反 = ? 🍚", options: ["飯 (Cơm) 🍚", "飲 (Uống) 🥤", "餓 (Đói) 😫"], answer: 0 },
-            { target: "日 + 月 = ? ☀️🌙", options: ["明 (Sáng/Ngày mai) 💡", "早 (Sớm) 🌅", "晚 (Muộn) 🌃"], answer: 0 }
+            { target: "亻+ 尔 = ? 🧍", pinyin: "nǐ", options: ["你 (Bạn)", "他 (Anh ấy)", "休 (Nghỉ ngơi)"], answer: 0 },
+            { target: "女 + 子 = ? 👩‍👦", pinyin: "hǎo", options: ["好 (Tốt)", "媽 (Mẹ)", "姐 (Chị)"], answer: 0 },
+            { target: "宀 + 豕(heo) = ? 🐖🏠", pinyin: "jiā", options: ["家 (Nhà)", "字 (Chữ)", "安 (An toàn)"], answer: 0 },
+            { target: "木 + 木 = ? 🌳🌳", pinyin: "lín", options: ["林 (Rừng)", "樹 (Cây)", "本 (Bản)"], answer: 0 },
+            { target: "氵+ 每 = ? 💧🌊", pinyin: "hǎi", options: ["海 (Biển)", "河 (Sông)", "洗 (Rửa)"], answer: 0 },
+            { target: "犭+ 句 = ? 🐕", pinyin: "gǒu", options: ["狗 (Chó)", "貓 (Mèo)", "豬 (Heo)"], answer: 0 },
+            { target: "疒 + 丙 = ? 🤒", pinyin: "bìng", options: ["病 (Bệnh)", "痛 (Đau)", "瘦 (Gầy)"], answer: 0 },
+            { target: "糹+ 工 = ? 🧶🔴", pinyin: "hóng", options: ["紅 (Đỏ)", "綠 (Xanh)", "給 (Cho)"], answer: 0 },
+            { target: "衤+ 羊 = ? 👕🐑", pinyin: "qún", options: ["裙 (Váy)", "褲 (Quần)", "裝 (Trang phục)"], answer: 0 },
+            { target: "言 + 兌 = ? 🗣️", pinyin: "shuō", options: ["說 (Nói)", "請 (Mời)", "語 (Ngôn ngữ)"], answer: 0 },
+            { target: "中 + 貝 = ? 💰", pinyin: "guì", options: ["貴 (Đắt)", "買 (Mua)", "費 (Phí)"], answer: 0 },
+            { target: "辶+ 斤 = ? 🚶", pinyin: "jìn", options: ["近 (Gần)", "遠 (Xa)", "送 (Tặng)"], answer: 0 },
+            { target: "釒+ 戔 = ? 🪙", pinyin: "qián", options: ["錢 (Tiền)", "銀 (Bạc)", "錯 (Sai)"], answer: 0 },
+            { target: "門 + 口 = ? 🚪👄", pinyin: "wèn", options: ["問 (Hỏi)", "開 (Mở)", "間 (Gian/Phòng)"], answer: 0 },
+            { target: "飠+ 反 = ? 🍚", pinyin: "fàn", options: ["飯 (Cơm)", "飲 (Uống)", "餓 (Đói)"], answer: 0 },
+            { target: "日 + 月 = ? ☀️🌙", pinyin: "míng", options: ["明 (Sáng/Ngày mai)", "早 (Sớm)", "晚 (Muộn)"], answer: 0 }
         ],
         4: [ 
-            { target: "___客 (Mời khách) 🍵", options: ["請 (言) 🙏", "清 (水) 💧", "情 (心) ❤️"], answer: 0 },
-            { target: "___水 (Uống nước) 🚰", options: ["喝 (口) 🥤", "渴 (水) 🥵", "唱 (口) 🎤"], answer: 0 },
-            { target: "心___ (Tâm tình) 💌", options: ["情 (心) ❤️", "晴 (日) ☀️", "請 (言) 🙏"], answer: 0 },
-            { target: "___天 (Trời nắng) ☀️", options: ["晴 (日) ☀️", "睛 (目) 👀", "情 (心) ❤️"], answer: 0 },
-            { target: "___字 (Đánh chữ) ⌨️", options: ["打 (手) ✋", "找 (手) 🔍", "訂 (言) 📝"], answer: 0 },
-            { target: "___家 (Gia đình) 👨‍👩‍👧‍👦", options: ["家 (宀) 🏠", "嫁 (女) 👰", "稼 (禾) 🌾"], answer: 0 },
-            { target: "生___ (Bị bệnh) 🤒", options: ["病 (疒) 🤒", "丙 (一) 1️⃣", "炳 (火) 🔥"], answer: 0 },
-            { target: "___狗 (Con chó) 🐕", options: ["狗 (犬) 🐕", "夠 (夕) 🌕", "句 (口) 👄"], answer: 0 },
-            { target: "___行 (Ngân hàng) 🏦", options: ["銀 (金) 🪙", "很 (彳) 🚶", "跟 (足) 👣"], answer: 0 },
-            { target: "___鐘 (Đồng hồ/Phút) ⏱️", options: ["鐘 (金) 🪙", "懂 (心) ❤️", "種 (禾) 🌾"], answer: 0 },
-            { target: "___飯 (Ăn cơm) 🍚", options: ["吃 (口) 👄", "氣 (气) 💨", "汽 (水) 💧"], answer: 0 },
-            { target: "顏___ (Màu sắc) 🎨", options: ["色 (色) 🎨", "紅 (糸) 🔴", "江 (水) 🌊"], answer: 0 },
-            { target: "牛___ (Thịt bò) 🥩", options: ["肉 (肉) 🥩", "內 (入) 🚪", "月 (月) 🌙"], answer: 0 },
-            { target: "___菜 (Mua rau) 🛒", options: ["買 (貝) 💰", "賣 (士) 👨‍🎓", "實 (宀) 🏠"], answer: 0 },
-            { target: "明___ (Ngày mai) 📅", options: ["天 (大) ☀️", "夫 (大) 👨", "太 (大) 🌞"], answer: 0 },
-            { target: "___話 (Nói chuyện) 🗣️", options: ["說 (言) 🗣️", "脫 (肉) 👕", "銳 (金) 🔪"], answer: 0 }
+            { target: "___客 (Mời khách) 🍵", pinyin: "qǐng kè", options: ["請 (言)", "清 (水)", "情 (心)"], answer: 0 },
+            { target: "___水 (Uống nước) 🚰", pinyin: "hē shuǐ", options: ["喝 (口)", "渴 (水)", "唱 (口)"], answer: 0 },
+            { target: "心___ (Tâm tình) 💌", pinyin: "xīn qíng", options: ["情 (心)", "晴 (日)", "請 (言)"], answer: 0 },
+            { target: "___天 (Trời nắng) ☀️", pinyin: "qíng tiān", options: ["晴 (日)", "睛 (目)", "情 (心)"], answer: 0 },
+            { target: "___字 (Đánh chữ) ⌨️", pinyin: "dǎ zì", options: ["打 (手)", "找 (手)", "訂 (言)"], answer: 0 },
+            { target: "___ (Gia đình) 👨‍👩‍👧‍👦", pinyin: "jiā", options: ["家 (宀)", "嫁 (女)", "稼 (禾)"], answer: 0 },
+            { target: "生___ (Bị bệnh) 🤒", pinyin: "shēng bìng", options: ["病 (疒)", "丙 (一)", "炳 (火)"], answer: 0 },
+            { target: "小___ (Con chó) 🐕", pinyin: "gǒu", options: ["狗 (犬)", "夠 (夕)", "句 (口)"], answer: 0 },
+            { target: "___行 (Ngân hàng) 🏦", pinyin: "yín háng", options: ["銀 (金)", "很 (彳)", "跟 (足)"], answer: 0 },
+            { target: "分___ (Đồng hồ/Phút) ⏱️", pinyin: "fēn zhōng", options: ["鐘 (金)", "懂 (心)", "種 (禾)"], answer: 0 },
+            { target: "___飯 (Ăn cơm) 🍚", pinyin: "chī fàn", options: ["吃 (口)", "氣 (气)", "汽 (水)"], answer: 0 },
+            { target: "顏___ (Màu sắc) 🎨", pinyin: "yán sè", options: ["色 (色)", "紅 (糸)", "江 (水)"], answer: 0 },
+            { target: "牛___ (Thịt bò) 🥩", pinyin: "niú ròu", options: ["肉 (肉)", "內 (入)", "月 (月)"], answer: 0 },
+            { target: "___菜 (Mua rau) 🛒", pinyin: "mǎi cài", options: ["買 (貝)", "賣 (士)", "實 (宀)"], answer: 0 },
+            { target: "明___ (Ngày mai) 📅", pinyin: "míng tiān", options: ["天 (大)", "夫 (大)", "太 (大)"], answer: 0 },
+            { target: "___話 (Nói chuyện) 🗣️", pinyin: "shuō huà", options: ["說 (言)", "脫 (肉)", "銳 (金)"], answer: 0 }
         ],
         5: [ 
-            { target: "「冰箱」🧊", options: ["Băng/Lạnh (冫) ❄️", "Lửa (火) 🔥", "Đất (土) ⛰️"], answer: 0 },
-            { target: "「疾病」🤒", options: ["Bệnh tật (疒) 🤒", "Lúa (禾) 🌾", "Lợn (豕) 🐖"], answer: 0 },
-            { target: "「絲綢」🧣", options: ["Tơ lụa (糸) 🧶", "Nước (水) 💧", "Kim loại (金) 🪙"], answer: 0 },
-            { target: "「艦艇」🚢", options: ["Thuyền (舟) ⛵", "Chim (隹) 🐦", "Hang động (穴) 🕳️"], answer: 0 },
-            { target: "「蜘蛛」🕷️", options: ["Côn trùng (虫) 🐛", "Thú dữ (豸) 🐆", "Chim (隹) 🐦"], answer: 0 },
-            { target: "「詞語」💬", options: ["Lời nói (言) 🗣️", "Tiền bạc (貝) 💰", "Bước đi (辶) 🚶"], answer: 0 },
-            { target: "「財富」💎", options: ["Tiền bạc (貝) 💰", "Làng mạc (邑) 🏘️", "Quần áo (衣) 👕"], answer: 0 },
-            { target: "「鋼鐵」⚙️", options: ["Kim loại (金) 🪙", "Gỗ (木) 🌳", "Rượu (酉) 🍷"], answer: 0 },
-            { target: "「閱讀」📖", options: ["Ngôn ngữ (言) 🗣️", "Cửa (門) 🚪", "Thức ăn (食) 🍚"], answer: 0 },
-            { target: "「餐廳」🍴", options: ["Ăn uống (食) 🍽️", "Mái nhà (宀) 🏠", "Đánh khẽ (支) 🏑"], answer: 0 },
-            { target: "「悲傷」😢", options: ["Cảm xúc (心) ❤️", "Bệnh tật (疒) 🤒", "Lực/Sức (力) 💪"], answer: 0 },
-            { target: "「擁抱」🫂", options: ["Tay/Hành động (手) ✋", "Bước chân (彳) 🚶", "Cơ thể (肉) 🥩"], answer: 0 },
-            { target: "「宇宙」🌌", options: ["Không gian (宀) 🏠", "Bát đĩa (皿) 🥣", "Hang (穴) 🕳️"], answer: 0 },
-            { target: "「稻麥」🌾", options: ["Cây trồng (禾) 🌾", "Gạo (米) 🍚", "Cây gai (麻) 🌿"], answer: 0 },
-            { target: "「肌膚」💆", options: ["Cơ thể (肉) 🥩", "Lông/Tóc (髟) 💇", "Quần áo (衣) 👕"], answer: 0 },
-            { target: "「飛禽」🦅", options: ["Chim (隹) 🐦", "Chó (犬) 🐕", "Hổ (虍) 🐯"], answer: 0 }
+            { target: "「冰箱」🧊", pinyin: "bīng xiāng", options: ["Băng/Lạnh (冫)", "Lửa (火)", "Đất (土)"], answer: 0 },
+            { target: "「疾病」🤒", pinyin: "jí bìng", options: ["Bệnh tật (疒)", "Lúa (禾)", "Lợn (豕)"], answer: 0 },
+            { target: "「絲綢」🧣", pinyin: "sī chóu", options: ["Tơ lụa (糸)", "Nước (水)", "Kim loại (金)"], answer: 0 },
+            { target: "「艦艇」🚢", pinyin: "jiàn tǐng", options: ["Thuyền (舟)", "Chim (隹)", "Hang động (穴)"], answer: 0 },
+            { target: "「蜘蛛」🕷️", pinyin: "zhī zhū", options: ["Côn trùng (虫)", "Thú dữ (豸)", "Chim (隹)"], answer: 0 },
+            { target: "「詞語」💬", pinyin: "cí yǔ", options: ["Lời nói (言)", "Tiền bạc (貝)", "Bước đi (辶)"], answer: 0 },
+            { target: "「財富」💎", pinyin: "cái fù", options: ["Tiền bạc (貝)", "Làng mạc (邑)", "Quần áo (衣)"], answer: 0 },
+            { target: "「鋼鐵」⚙️", pinyin: "gāng tiě", options: ["Kim loại (金)", "Gỗ (木)", "Rượu (酉)"], answer: 0 },
+            { target: "「閱讀」📖", pinyin: "yuè dú", options: ["Ngôn ngữ (言)", "Cửa (門)", "Thức ăn (食)"], answer: 0 },
+            { target: "「餐廳」🍴", pinyin: "cān tīng", options: ["Ăn uống (食)", "Mái nhà (宀)", "Đánh khẽ (支)"], answer: 0 },
+            { target: "「悲傷」😢", pinyin: "bēi shāng", options: ["Cảm xúc (心)", "Bệnh tật (疒)", "Lực/Sức (力)"], answer: 0 },
+            { target: "「擁抱」🫂", pinyin: "yǒng bào", options: ["Tay/Hành động (手)", "Bước chân (彳)", "Cơ thể (肉)"], answer: 0 },
+            { target: "「宇宙」🌌", pinyin: "yǔ zhòu", options: ["Không gian (宀)", "Bát đĩa (皿)", "Hang (穴)"], answer: 0 },
+            { target: "「稻麥」🌾", pinyin: "dào mài", options: ["Cây trồng (禾)", "Gạo (米)", "Cây gai (麻)"], answer: 0 },
+            { target: "「肌膚」💆", pinyin: "jī fū", options: ["Cơ thể (肉)", "Lông/Tóc (髟)", "Quần áo (衣)"], answer: 0 },
+            { target: "「飛禽」🦅", pinyin: "fēi qín", options: ["Chim (隹)", "Chó (犬)", "Hổ (虍)"], answer: 0 }
         ]
     };
 
@@ -399,7 +380,10 @@
 
         document.getElementById("q-title-zh").innerText = difficultyTitles[currentLevel].zh;
         document.getElementById("q-title-vn").innerText = difficultyTitles[currentLevel].vn;
+        
+        // 渲染題目與拼音
         document.getElementById("q-target").innerText = currentQ.target;
+        document.getElementById("q-pinyin").innerText = currentQ.pinyin;
 
         const optionsContainer = document.getElementById("options-container");
         optionsContainer.innerHTML = "";
