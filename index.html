@@ -3,145 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>華語部首闖關遊戲 | Trò chơi Bộ thủ</title>
+    <title>部首冒險：勇闖寶藏箱 | Trò chơi Bộ thủ mạo hiểm</title>
     <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #FFB07F;
-            --secondary-color: #FFDFB9;
-            --bg-color: #FFF9F1;
+            --sky-blue: #70BBEE; 
+            --grass-green: #29A029; 
+            --dirt-brown: #9E744A; 
+            --primary-color: #FFB07F; 
+            --secondary-color: #FFE5B4; 
             --text-color: #4A4A4A;
+            --danger-color: #FF9B9B;
             --success-color: #A3D897;
-            --wrong-color: #FF9B9B;
         }
 
         body {
             font-family: 'Mulish', 'Microsoft JhengHei', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
+            margin: 0; padding: 0;
+            background-color: var(--sky-blue);
+            overflow: hidden; 
+            image-rendering: pixelated; 
         }
 
+        /* 像素冒險場景容器 */
+        .pixel-scene {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: 1; 
+            display: flex; flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* 場景元素 */
+        .sky { background-color: var(--sky-blue); flex-grow: 1; position: relative; }
+        .ground-dirt { height: 30vh; display: flex; flex-direction: column; overflow: hidden; }
+        .grass { background-color: var(--grass-green); height: 15vh; border-top: 4px solid #1E7E1E; position: relative;}
+        .dirt { background-color: var(--dirt-brown); flex-grow: 1; border-top: 4px solid #7E5E3A;}
+
+        .rock-left { position: absolute; bottom: 15vh; left: 5%; width: 150px; height: 150px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"%3E%3Crect width="10" height="10" fill="%23888888"/%3E%3Crect x="1" y="1" width="8" height="8" fill="%23666666"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; z-index: 1; }
+        .treasure-chest { position: absolute; bottom: 18vh; right: 5%; width: 200px; height: 160px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"%3E%3Crect width="10" height="10" fill="%23FFB07F"/%3E%3Crect x="1" y="1" width="8" height="8" fill="%23FFD1A9"/%3E%3Crect y="3" width="10" height="2" fill="%23FFD1A9"/%3E%3C rect x="4" y="6" width="2" height="2" fill="%23FFD1A9"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; z-index: 0; }
+        .vines { position: absolute; bottom: 15vh; right: 15%; width: 100px; height: 200px; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"%3E%3Cpath d="M5 0h2v1H5zm1 1h2v1H6zm1 1h2v1H7zm1 1h2v1H8zm1 1h2v1H9zM5 4h2v1H5zm1 1h2v1H6zm1 2h2v1H7zm1 1h2v1H8zm1 1h2v1H9z" fill="%2329A029"/%3E%3C/svg%3E'); background-size: contain; background-repeat: no-repeat; z-index: 1; }
+
+        /* 遊戲核心 UI */
         #app {
-            background: white;
-            width: 100%;
-            max-width: 600px;
-            border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.95); 
+            width: 90%; max-width: 500px;
+            margin: auto;
+            border: 8px solid #FFD1A9; 
+            padding: 20px;
             box-sizing: border-box;
-            position: relative;
+            position: absolute; top: 12vh; left: 50%; transform: translateX(-50%);
+            z-index: 10; 
+            border-radius: 0;
+            image-rendering: pixelated;
+            text-align: center;
         }
 
         .hidden { display: none !important; }
 
-        h1 { font-size: 28px; color: #FF8C42; margin-bottom: 5px; }
-        .subtitle { font-size: 16px; color: #888; margin-bottom: 20px; }
+        h1 { font-size: 26px; color: #FF8C42; margin-bottom: 5px; }
+        .subtitle { font-size: 15px; color: #888; margin-bottom: 20px; }
 
-        /* 進度條 */
-        .progress-container {
-            width: 100%;
-            background-color: #EEE;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            height: 15px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background-color: var(--primary-color);
-            width: 0%;
-            transition: width 0.4s ease;
-        }
+        /* 進度條與生命值 */
+        .status-ui { position: absolute; top: 15px; right: 15px; z-index: 20; display: flex; flex-direction: column; align-items: flex-end; width: 100%; padding-right: 30px; box-sizing: border-box;}
+        .pixel-heart-bar { display: flex; gap: 8px; margin-bottom: 10px; }
+        .pixel-heart { width: 25px; height: 25px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 0h4v1H3V0zm-1 1h6v1H2V1zM1 2h8v1H1V2zm-1 1h10v3H0V3zm1 3h8v1H1V6zm1 1h6v1H2V7zm1 1h4v1H3V8z' fill='%23FF9B9B'/%3E%3C/svg%3E"); background-size: contain; background-repeat: no-repeat;}
+        .pixel-heart.empty { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 0h4v1H3V0zm-1 1h6v1H2V1zM1 2h8v1H1V2zm-1 1h10v3H0V3zm1 3h8v1H1V6zm1 1h6v1H2V7zm1 1h4v1H3V8z' fill='%23CCCCCC'/%3E%3C/svg%3E"); }
+        
+        .progress-container-adventure { display: flex; gap: 3px; justify-content: flex-end; flex-wrap: wrap; max-width: 250px;}
+        .pixel-progress-segment { width: 12px; height: 12px; border: 2px solid var(--primary-color); background-color: rgba(255,255,255,0.8); }
+        .pixel-progress-segment.active { background-color: var(--success-color); border-color: #7EAF76; }
 
         /* 遊戲區域 */
-        .question-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-        .question-subtitle { font-size: 18px; color: #666; margin-bottom: 20px; }
+        .question-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; color: #4A4A4A; }
+        .question-subtitle { font-size: 14px; color: #888; margin-bottom: 20px; }
         .target-item {
-            font-size: 60px;
+            font-size: 50px;
             font-weight: 900;
             color: var(--primary-color);
-            margin: 20px 0;
+            margin: 15px 0;
         }
 
-        /* 按鈕樣式 */
+        /* 像素風格按鈕 */
         .btn {
             display: block;
             width: 100%;
             background-color: var(--secondary-color);
-            border: 2px solid var(--primary-color);
-            border-radius: 15px;
-            padding: 15px;
-            margin: 10px 0;
-            font-size: 20px;
+            border: 6px solid #FFD1A9; 
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 18px;
             font-family: inherit;
             font-weight: bold;
             color: var(--text-color);
             cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
+            transition: transform 0.1s;
+            border-radius: 0;
         }
         .btn:active { transform: scale(0.98); }
-        .btn:hover { background-color: var(--primary-color); color: white; }
+        .btn:hover { border-color: var(--primary-color); background-color: #FFD1A9; }
         
-        /* 第4關點擊配對專用樣式 */
-        .l4-radicals { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .l4-radical-btn {
-            font-size: 28px; padding: 10px 20px; border-radius: 10px;
-            background: #EEE; border: 2px solid #CCC; cursor: pointer;
-        }
-        .l4-radical-btn.selected { background: var(--primary-color); color: white; border-color: #FF8C42; transform: scale(1.1); }
-        .l4-radical-btn.matched { visibility: hidden; }
-
-        .l4-categories { display: flex; flex-direction: column; gap: 15px; }
-        .l4-category-box {
-            border: 3px dashed var(--primary-color);
-            border-radius: 15px;
-            padding: 15px;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            cursor: pointer;
-            background: #FFF5EC;
-        }
-        .l4-category-box:hover { background: var(--secondary-color); }
-        .l4-category-title { font-weight: bold; font-size: 20px; width: 100%; margin-bottom: 5px;}
-        .placed-radical { font-size: 24px; font-weight: bold; color: var(--primary-color); }
-
         /* 回饋彈跳視窗 */
         #feedback-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.95);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            border-radius: 20px; z-index: 10;
+            border-radius: 0; border: 8px solid #FFD1A9; z-index: 100;
+            image-rendering: pixelated;
+            box-sizing: border-box;
+            padding: 20px;
         }
-        .feedback-icon { font-size: 80px; margin-bottom: 10px; }
-        .feedback-text-zh { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
-        .feedback-text-vn { font-size: 20px; color: #666; margin-bottom: 20px; }
-        .next-btn { background-color: var(--success-color); border: none; color: white; width: 80%; }
+        .feedback-icon { font-size: 70px; margin-bottom: 10px; }
+        .feedback-text-zh { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+        .feedback-text-vn { font-size: 18px; color: #666; margin-bottom: 20px; }
+        .next-btn { background-color: var(--success-color); border: none; color: white; width: 90%; border: 6px solid #7EAF76; }
         
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div class="progress-container hidden" id="progress-wrapper">
-        <div class="progress-bar" id="progress-bar"></div>
-    </div>
-
     <div id="screen-start">
-        <h1>部首闖關遊戲</h1>
-        <div class="subtitle">Trò chơi Bộ thủ</div>
+        <h1>部首冒險：勇闖寶藏箱</h1>
+        <div class="subtitle">Mạo hiểm: Chinh phục rương báu</div>
         <div class="target-item">🎮</div>
-        <button class="btn" onclick="startGame()">開始遊戲<br><span style="font-size: 14px; font-weight: normal;">Bắt đầu</span></button>
+        <button class="btn" onclick="startGame()">開始挑戰<br><span style="font-size: 14px; font-weight: normal;">Bắt đầu thử thách</span></button>
     </div>
 
     <div id="screen-game" class="hidden">
@@ -151,18 +136,19 @@
         <div id="options-container"></div>
     </div>
 
-    <div id="screen-level4" class="hidden">
-        <div class="question-title">第四關：部首分類</div>
-        <div class="question-subtitle">Nhấp vào bộ thủ, sau đó nhấp vào nhóm đúng</div>
-        <div class="l4-radicals" id="l4-radicals-container"></div>
-        <div class="l4-categories" id="l4-categories-container"></div>
+    <div id="screen-end" class="hidden">
+        <h1>挑戰完成！擊敗大魔王！</h1>
+        <div class="subtitle">Hoàn thành thử thách! Đánh bại Trùm cuối!</div>
+        <div class="target-item">🏆</div>
+        <h2 id="final-score" style="color: var(--primary-color);">答對: 0 / 15</h2>
+        <button class="btn" onclick="location.reload()">再玩一次<br><span style="font-size: 14px; font-weight: normal;">Chơi lại</span></button>
     </div>
 
-    <div id="screen-end" class="hidden">
-        <h1>恭喜通關！</h1>
-        <div class="subtitle">Chúc mừng bạn đã hoàn thành!</div>
-        <div class="target-item">🏆</div>
-        <button class="btn" onclick="location.reload()">再玩一次<br><span style="font-size: 14px; font-weight: normal;">Chơi lại</span></button>
+    <div id="screen-gameover" class="hidden">
+        <h1 style="color: var(--danger-color);">生命值扣完！遊戲結束</h1>
+        <div class="subtitle">Đã hết máu! Trò chơi kết thúc</div>
+        <div class="target-item">💀</div>
+        <button class="btn" onclick="location.reload()">重新開始<br><span style="font-size: 14px; font-weight: normal;">Chơi lại</span></button>
     </div>
 
     <div id="feedback-modal" class="hidden">
@@ -173,200 +159,260 @@
     </div>
 </div>
 
+<div class="pixel-scene hidden" id="pixel-scene-container">
+    <div class="sky">
+        <div class="rock-left"></div>
+        <div class="treasure-chest"></div>
+        <div class="vines"></div>
+    </div>
+    <div class="ground-dirt">
+        <div class="grass"></div>
+        <div class="dirt"></div>
+    </div>
+</div>
+
+<div class="status-ui hidden" id="status-ui-container">
+    <div class="pixel-heart-bar">
+        <div class="pixel-heart" id="heart-1"></div>
+        <div class="pixel-heart" id="heart-2"></div>
+        <div class="pixel-heart" id="heart-3"></div>
+    </div>
+    <div class="progress-container-adventure" id="progress-container-adventure"></div>
+</div>
+
 <script>
     // ==========================================
-    // 題庫設定區 (您可以在此處擴充至 50 個部首)
+    // 遊戲音效引擎 (Web Audio API - 無需外部音檔)
     // ==========================================
-    
-    // 第一關：認識部首 (選意思)
-    const level1Data = [
-        { target: "氵", options: ["水 (Nước)", "火 (Lửa)", "木 (Cây)"], answer: 0 },
-        { target: "木", options: ["金 (Vàng)", "木 (Cây)", "土 (Đất)"], answer: 1 },
-        { target: "扌", options: ["手 (Tay)", "腳 (Chân)", "口 (Miệng)"], answer: 0 }
-    ];
+    let audioCtx;
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
 
-    // 第二關：找部首 (選正確部首)
-    const level2Data = [
-        { target: "海", options: ["氵", "每", "母"], answer: 0 },
-        { target: "林", options: ["木", "十", "八"], answer: 0 },
-        { target: "打", options: ["丁", "扌", "一"], answer: 1 }
-    ];
+    function playTone(freq, type, duration, vol = 0.1) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
 
-    // 第三關：用部首造字 (給部首選字)
-    const level3Data = [
-        { target: "氵", options: ["河 (Sông)", "跑 (Chạy)", "樹 (Cây)"], answer: 0 },
-        { target: "艹", options: ["花 (Hoa)", "狗 (Chó)", "椅 (Ghế)"], answer: 0 }
-    ];
+    // 吃金幣音效 (答對)
+    function playCorrectSound() {
+        initAudio();
+        playTone(987.77, 'square', 0.1, 0.1); // B5
+        setTimeout(() => playTone(1318.51, 'square', 0.2, 0.1), 100); // E6
+    }
 
-    // 第四關：部首分類 (點擊配對)
-    const level4Data = {
-        radicals: [
-            { id: "r1", text: "氵", cat: "water" },
-            { id: "r2", text: "木", cat: "plant" },
-            { id: "r3", text: "艹", cat: "plant" },
-            { id: "r4", text: "扌", cat: "action" }
+    // 受傷音效 (答錯)
+    function playWrongSound() {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    // 升級音效
+    function playLevelUpSound() {
+        initAudio();
+        playTone(261.63, 'square', 0.1); // C4
+        setTimeout(() => playTone(329.63, 'square', 0.1), 100); // E4
+        setTimeout(() => playTone(392.00, 'square', 0.1), 200); // G4
+        setTimeout(() => playTone(523.25, 'square', 0.3), 300); // C5
+    }
+
+    // ==========================================
+    // 動態難度題庫設定區 (控制在 A2 以下程度)
+    // ==========================================
+    const questionBank = {
+        1: [ // 難度 1：認識部首
+            { target: "女", options: ["phụ nữ (Phụ nữ)", "con (Con)", "người (Người)"], answer: 0 },
+            { target: "心", options: ["tay (Tay)", "tim, lòng (Tim/Tình cảm)", "miệng (Miệng)"], answer: 1 },
+            { target: "言", options: ["lời nói (Lời nói)", "âm nhạc (Âm nhạc)", "hành động (Hành động)"], answer: 0 },
+            { target: "貝", options: ["vỏ sò, tiền (Tiền/Vỏ sò)", "quần áo (Quần áo)", "kim loại (Kim loại)"], answer: 0 },
+            { target: "木", options: ["vàng (Vàng)", "nước (Nước)", "cây (Cây)"], answer: 2 },
+            { target: "食", options: ["uống (Uống)", "ăn (Ăn)", "ngủ (Ngủ)"], answer: 1 }
         ],
-        categories: [
-            { id: "water", zh: "水", vn: "Nước" },
-            { id: "plant", zh: "植物", vn: "Thực vật" },
-            { id: "action", zh: "動作", vn: "Hành động" }
+        2: [ // 難度 2：找漢字中的部首 (基礎單字)
+            { target: "媽 (Mẹ)", options: ["女", "馬", "口"], answer: 0 },
+            { target: "吃 (Ăn)", options: ["口", "乞", "人"], answer: 0 },
+            { target: "想 (Nhớ, nghĩ)", options: ["木", "目", "心"], answer: 2 },
+            { target: "語 (Ngôn ngữ)", options: ["言", "五", "口"], answer: 0 },
+            { target: "飯 (Cơm)", options: ["食", "反", "人"], answer: 0 },
+            { target: "貴 (Đắt)", options: ["貝", "中", "一"], answer: 0 }
+        ],
+        3: [ // 難度 3：部首組合與造字 (基礎部件拼圖)
+            { target: "女 + 子 = ?", options: ["好 (Tốt)", "媽 (Mẹ)", "姐 (Chị)"], answer: 0 },
+            { target: "日 + 月 = ?", options: ["明 (Sáng)", "早 (Sớm)", "晚 (Muộn)"], answer: 0 },
+            { target: "門 + 日 = ?", options: ["間 (Gian, phòng)", "問 (Hỏi)", "開 (Mở)"], answer: 0 },
+            { target: "亻(人) + 尔 = ?", options: ["你 (Bạn)", "他 (Anh ấy)", "我 (Tôi)"], answer: 0 },
+            { target: "木 + 貝 = ?", options: ["杯 (Cốc, ly)", "樹 (Cây)", "本 (Bản)"], answer: 0 }
+        ],
+        4: [ // 難度 4：形近字辨析 (真假雙胞胎陷阱)
+            { target: "___客 (Mời khách)", options: ["請 (言)", "清 (水)", "情 (心)"], answer: 0 },
+            { target: "___水 (Uống nước)", options: ["喝 (口)", "渴 (水)", "唱 (口)"], answer: 0 },
+            { target: "心___ (Tâm tình)", options: ["情 (心)", "晴 (日)", "請 (言)"], answer: 0 },
+            { target: "你好___？ (Bạn khỏe không?)", options: ["嗎 (口)", "媽 (女)", "馬 (馬)"], answer: 0 },
+            { target: "___行 (Ngân hàng)", options: ["銀 (金)", "很 (彳)", "跟 (足)"], answer: 0 }
+        ],
+        5: [ // 難度 5：大魔王盲猜 (用部首猜測 A2 生活單字)
+            { target: "「冰箱」", options: ["Liên quan đến Băng/Lạnh (冫)", "Liên quan đến Lửa (火)", "Liên quan đến Đất (土)"], answer: 0 },
+            { target: "「鏡子」", options: ["Liên quan đến Kim loại/Kính (金)", "Liên quan đến Nước (水)", "Liên quan đến Lời nói (言)"], answer: 0 },
+            { target: "「褲子」", options: ["Liên quan đến Quần áo (衣)", "Liên quan đến Tiền bạc (貝)", "Liên quan đến Cây cỏ (艹)"], answer: 0 },
+            { target: "「說謊」", options: ["Liên quan đến Lời nói (言)", "Liên quan đến Lỗ tai (耳)", "Liên quan đến Bệnh tật (疒)"], answer: 0 },
+            { target: "「生病」", options: ["Liên quan đến Bệnh tật (疒)", "Liên quan đến Tay (手)", "Liên quan đến Gỗ (木)"], answer: 0 }
         ]
     };
 
-    // ==========================================
-    // 遊戲邏輯控制區
-    // ==========================================
-
-    let currentLevel = 1;
-    let currentQuestionIndex = 0;
-    let totalQuestions = level1Data.length + level2Data.length + level3Data.length + 1; // +1 是第四關
-    let questionsAnswered = 0;
-    
-    // 關卡標題對照表
-    const levelTitles = {
-        1: { zh: "第一關：認識部首", vn: "Màn 1: Nhận biết bộ thủ" },
-        2: { zh: "第二關：找部首", vn: "Màn 2: Tìm bộ thủ" },
-        3: { zh: "第三關：用部首造字", vn: "Màn 3: Tạo chữ từ bộ thủ" }
+    const difficultyTitles = {
+        1: { zh: "難度 1：冒險開始", vn: "Màn 1: Khởi đầu mạo hiểm" },
+        2: { zh: "難度 2：中級小怪", vn: "Màn 2: Quái vật trung cấp" },
+        3: { zh: "難度 3：高級護衛", vn: "Màn 3: Hộ vệ cao cấp" },
+        4: { zh: "難度 4：真假雙胞胎", vn: "Màn 4: Phân biệt chữ" },
+        5: { zh: "難度 5：大魔王盲猜！", vn: "Màn 5: Trùm cuối Đoán nghĩa!" }
     };
 
-    function updateProgress() {
-        const percent = (questionsAnswered / totalQuestions) * 100;
-        document.getElementById("progress-bar").style.width = percent + "%";
-    }
+    // ==========================================
+    // 動態心流邏輯控制
+    // ==========================================
+    const TOTAL_QUESTIONS_PER_GAME = 15; 
+    const MAX_HEALTH = 3;
+    let currentQuestionCount = 0;
+    let correctCount = 0;
+    let currentHealth = MAX_HEALTH;
+    
+    let currentDifficulty = 1; 
+    let currentStreak = 0;     
 
     function startGame() {
+        initAudio(); // 初始化音效引擎
         document.getElementById("screen-start").classList.add("hidden");
-        document.getElementById("progress-wrapper").classList.remove("hidden");
-        loadQuestion();
+        document.getElementById("pixel-scene-container").classList.remove("hidden");
+        document.getElementById("status-ui-container").classList.remove("hidden");
+        document.getElementById("screen-game").classList.remove("hidden");
+        
+        const progressContainer = document.getElementById("progress-container-adventure");
+        progressContainer.innerHTML = "";
+        for (let i = 0; i < TOTAL_QUESTIONS_PER_GAME; i++) {
+            const segment = document.createElement("div");
+            segment.className = "pixel-progress-segment";
+            segment.id = `progress-segment-${i}`;
+            progressContainer.appendChild(segment);
+        }
+        
+        updatePixelUI();
+        loadNextQuestion();
     }
 
-    function loadQuestion() {
-        document.getElementById("screen-game").classList.remove("hidden");
-        document.getElementById("screen-level4").classList.add("hidden");
+    function updatePixelUI() {
+        for (let i = 1; i <= MAX_HEALTH; i++) {
+            const heart = document.getElementById(`heart-${i}`);
+            if (i <= currentHealth) {
+                heart.classList.remove("empty");
+            } else {
+                heart.classList.add("empty");
+            }
+        }
         
-        let currentData;
-        if (currentLevel === 1) currentData = level1Data;
-        else if (currentLevel === 2) currentData = level2Data;
-        else if (currentLevel === 3) currentData = level3Data;
-        else { loadLevel4(); return; }
+        for (let i = 0; i < TOTAL_QUESTIONS_PER_GAME; i++) {
+            const segment = document.getElementById(`progress-segment-${i}`);
+            if (i < currentQuestionCount) {
+                segment.classList.add("active");
+            } else {
+                segment.classList.remove("active");
+            }
+        }
+    }
 
-        if (currentQuestionIndex >= currentData.length) {
-            currentLevel++;
-            currentQuestionIndex = 0;
-            loadQuestion();
+    function loadNextQuestion() {
+        if (currentQuestionCount >= TOTAL_QUESTIONS_PER_GAME) {
+            endGame();
             return;
         }
 
-        const q = currentData[currentQuestionIndex];
-        document.getElementById("q-title-zh").innerText = levelTitles[currentLevel].zh;
-        document.getElementById("q-title-vn").innerText = levelTitles[currentLevel].vn;
-        document.getElementById("q-target").innerText = q.target;
+        updatePixelUI();
+
+        const pool = questionBank[currentDifficulty];
+        const randomQuestion = pool[Math.floor(Math.random() * pool.length)];
+
+        document.getElementById("q-title-zh").innerText = difficultyTitles[currentDifficulty].zh;
+        document.getElementById("q-title-vn").innerText = difficultyTitles[currentDifficulty].vn;
+        document.getElementById("q-target").innerText = randomQuestion.target;
 
         const optionsContainer = document.getElementById("options-container");
         optionsContainer.innerHTML = "";
         
-        q.options.forEach((opt, index) => {
+        randomQuestion.options.forEach((opt, index) => {
             const btn = document.createElement("button");
             btn.className = "btn";
             btn.innerHTML = opt;
-            btn.onclick = () => checkAnswer(index, q.answer);
+            btn.onclick = () => checkAnswer(index, randomQuestion.answer);
             optionsContainer.appendChild(btn);
         });
     }
 
     function checkAnswer(selectedIndex, correctIndex) {
+        currentQuestionCount++; 
+
         if (selectedIndex === correctIndex) {
-            showFeedback(true, "答對了！", "Đúng rồi! Tuyệt vời!");
-            questionsAnswered++;
-            updateProgress();
-            currentQuestionIndex++;
-        } else {
-            showFeedback(false, "哎呀，不對喔！", "Ôi, thử lại lần nữa nhé!");
-        }
-    }
-
-    // --- 第四關專用邏輯 ---
-    let selectedRadicalId = null;
-    let l4MatchedCount = 0;
-
-    function loadLevel4() {
-        document.getElementById("screen-game").classList.add("hidden");
-        document.getElementById("screen-level4").classList.remove("hidden");
-        
-        const radContainer = document.getElementById("l4-radicals-container");
-        const catContainer = document.getElementById("l4-categories-container");
-        radContainer.innerHTML = "";
-        catContainer.innerHTML = "";
-        l4MatchedCount = 0;
-
-        // 渲染待選部首
-        level4Data.radicals.forEach(rad => {
-            const btn = document.createElement("div");
-            btn.className = "l4-radical-btn";
-            btn.id = "rad-" + rad.id;
-            btn.innerText = rad.text;
-            btn.onclick = () => selectRadical(btn, rad.cat);
-            radContainer.appendChild(btn);
-        });
-
-        // 渲染分類箱
-        level4Data.categories.forEach(cat => {
-            const box = document.createElement("div");
-            box.className = "l4-category-box";
-            box.onclick = () => dropToCategory(cat.id, box);
+            correctCount++;
+            currentStreak++;
             
-            const title = document.createElement("div");
-            title.className = "l4-category-title";
-            title.innerText = `${cat.zh} (${cat.vn})`;
+            let feedbackZh = "答對了！噴出金幣！ 🌟";
+            let feedbackVn = "Đúng rồi! Tuyệt vời! ✨";
             
-            box.appendChild(title);
-            catContainer.appendChild(box);
-        });
-    }
-
-    function selectRadical(btnElement, category) {
-        // 清除其他選取狀態
-        document.querySelectorAll(".l4-radical-btn").forEach(el => el.classList.remove("selected"));
-        btnElement.classList.add("selected");
-        selectedRadicalId = { element: btnElement, correctCat: category, text: btnElement.innerText };
-    }
-
-    function dropToCategory(categoryId, boxElement) {
-        if (!selectedRadicalId) return; // 還沒選部首
-
-        if (selectedRadicalId.correctCat === categoryId) {
-            // 配對成功
-            selectedRadicalId.element.classList.add("matched");
-            
-            const placed = document.createElement("span");
-            placed.className = "placed-radical";
-            placed.innerText = selectedRadicalId.text;
-            boxElement.appendChild(placed);
-            
-            selectedRadicalId = null;
-            l4MatchedCount++;
-            
-            if (l4MatchedCount === level4Data.radicals.length) {
-                questionsAnswered++;
-                updateProgress();
-                setTimeout(() => {
-                    document.getElementById("screen-level4").classList.add("hidden");
-                    document.getElementById("screen-end").classList.remove("hidden");
-                }, 1000);
+            if (currentStreak >= 3 && currentDifficulty < 5) {
+                currentDifficulty++;
+                currentStreak = 0; 
+                playLevelUpSound(); // 播放升級音效
+                
+                if (currentDifficulty === 5) {
+                    feedbackZh = "警告！大魔王出現了！ 🐉";
+                    feedbackVn = "Cảnh báo! Trùm cuối xuất hiện! 🐉";
+                } else {
+                    feedbackZh = "太厲害了！進入下一個場景！ 🚀";
+                    feedbackVn = "Quá giỏi! Chuyển cảnh tiếp theo! 🚀";
+                }
+            } else {
+                playCorrectSound(); // 一般答對音效
             }
+
+            showFeedback(true, feedbackZh, feedbackVn);
         } else {
-            // 配對失敗
-            selectedRadicalId.element.classList.remove("selected");
-            selectedRadicalId = null;
-            showFeedback(false, "分類錯誤喔！", "Phân loại sai rồi, thử lại nhé!");
+            playWrongSound(); // 答錯扣血音效
+            currentStreak = 0;
+            currentDifficulty = 1;
+            currentHealth--;
+            
+            if (currentHealth <= 0) {
+                setTimeout(gameOver, 800); // 延遲一下讓學生看到被扣血
+                return;
+            }
+            
+            showFeedback(false, "哎呀！被怪物攻擊！降回基礎", "Ôi! Bị quái vật tấn công! Trở lại cơ bản");
         }
     }
-
-    // --- 回饋視窗邏輯 ---
-    let isFeedbackSuccess = false;
 
     function showFeedback(isSuccess, textZh, textVn) {
-        isFeedbackSuccess = isSuccess;
         const modal = document.getElementById("feedback-modal");
         const icon = document.getElementById("fb-icon");
         const btn = document.getElementById("fb-btn");
@@ -380,17 +426,31 @@
             btn.innerText = "下一題 / Câu tiếp theo";
             btn.style.backgroundColor = "var(--success-color)";
         } else {
-            icon.innerText = "💪";
-            btn.innerText = "再試一次 / Thử lại";
+            icon.innerText = "💥";
+            btn.innerText = "繼續努力 / Tiếp tục cố gắng";
             btn.style.backgroundColor = "var(--wrong-color)";
         }
     }
 
     function closeFeedback() {
         document.getElementById("feedback-modal").classList.add("hidden");
-        if (isFeedbackSuccess && currentLevel <= 3) {
-            loadQuestion();
-        }
+        loadNextQuestion();
+    }
+
+    function gameOver() {
+        document.getElementById("feedback-modal").classList.add("hidden");
+        document.getElementById("screen-game").classList.add("hidden");
+        document.getElementById("pixel-scene-container").classList.add("hidden");
+        document.getElementById("status-ui-container").classList.add("hidden");
+        document.getElementById("screen-gameover").classList.remove("hidden");
+    }
+
+    function endGame() {
+        playLevelUpSound(); // 通關放個慶祝音效
+        document.getElementById("screen-game").classList.add("hidden");
+        document.getElementById("status-ui-container").classList.add("hidden");
+        document.getElementById("screen-end").classList.remove("hidden");
+        document.getElementById("final-score").innerText = `答對: ${correctCount} / ${TOTAL_QUESTIONS_PER_GAME}`;
     }
 </script>
 
