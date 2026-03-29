@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>部首冒險：VR 全息寶藏箱 | Trò chơi Bộ thủ mạo hiểm VR</title>
+    <title>部首冒險：VR 全息訓練 | Trò chơi Bộ thủ mạo hiểm VR</title>
     <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,7 +13,8 @@
             --text-color: #FFFFFF;
             --danger-color: #FF3366;
             --success-color: #00FF66;
-            --pinyin-color: #00FFFF; /* 拼音專屬螢光青色 */
+            --warning-color: #FFCC00;
+            --pinyin-color: #00FFFF; 
         }
 
         body {
@@ -23,173 +24,211 @@
             color: var(--text-color);
             overflow: hidden; 
             background-image: 
-                linear-gradient(rgba(0, 136, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 136, 255, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
+                linear-gradient(rgba(0, 136, 255, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 136, 255, 0.15) 1px, transparent 1px);
+            background-size: 50px 50px;
             background-position: center center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            perspective: 1000px; 
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; perspective: 1000px; 
         }
 
         .vr-reticle {
             position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
-            background: rgba(255,255,255,0.5); border-radius: 50%;
+            background: rgba(255,255,255,0.8); border-radius: 50%;
             transform: translate(-50%, -50%); z-index: 0; pointer-events: none;
-            box-shadow: 0 0 10px var(--success-color);
+            box-shadow: 0 0 15px var(--success-color);
         }
 
-        #app {
-            background: rgba(10, 10, 25, 0.6); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            width: 90%; max-width: 500px;
-            border: 2px solid rgba(0, 136, 255, 0.5); 
-            padding: 30px 20px;
-            box-sizing: border-box;
-            z-index: 10; 
-            text-align: center;
-            border-radius: 15px;
-            box-shadow: 0 0 30px rgba(0, 136, 255, 0.3), inset 0 0 20px rgba(153, 51, 255, 0.2);
-            transform: rotateX(8deg) translateY(-2%);
-            transition: transform 0.3s ease-out;
+        .vr-panel {
+            background: rgba(10, 10, 25, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            width: 92%; max-width: 550px; border: 2px solid rgba(0, 136, 255, 0.6); 
+            padding: 25px 20px; box-sizing: border-box; z-index: 10; 
+            text-align: center; border-radius: 15px;
+            box-shadow: 0 0 40px rgba(0, 136, 255, 0.3), inset 0 0 20px rgba(153, 51, 255, 0.2);
+            transform: rotateX(6deg) translateY(-2%); transition: transform 0.3s ease-out, box-shadow 0.3s, border-color 0.3s;
+            max-height: 95vh; overflow-y: auto;
         }
-
-        #app:hover { transform: rotateX(0deg) translateY(0); }
-
+        .vr-panel:hover { transform: rotateX(0deg) translateY(0); }
         .hidden { display: none !important; }
 
+        /* 受擊震動動畫 */
+        @keyframes shake {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(0px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(2px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(2px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-active { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: var(--danger-color) !important; box-shadow: 0 0 50px rgba(255,51,102,0.6) !important; }
+
+        /* 殘血心跳警告動畫 */
+        @keyframes heartbeat {
+            0% { box-shadow: 0 0 20px rgba(255, 51, 102, 0.3), inset 0 0 10px rgba(255, 51, 102, 0.2); border-color: rgba(255, 51, 102, 0.5); }
+            50% { box-shadow: 0 0 60px rgba(255, 51, 102, 0.8), inset 0 0 30px rgba(255, 51, 102, 0.5); border-color: var(--danger-color); }
+            100% { box-shadow: 0 0 20px rgba(255, 51, 102, 0.3), inset 0 0 10px rgba(255, 51, 102, 0.2); border-color: rgba(255, 51, 102, 0.5); }
+        }
+        .low-health-active { animation: heartbeat 1s infinite !important; }
+
         h1 { font-size: 26px; color: var(--success-color); margin-bottom: 5px; font-weight: 900; text-shadow: 0 0 10px rgba(0,255,102,0.5);}
-        .subtitle { font-size: 15px; color: #AACCFF; margin-bottom: 20px; }
+        .subtitle { font-size: 15px; color: #AACCFF; margin-bottom: 15px; font-weight: bold;}
 
-        .status-ui { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 20px; border-bottom: 1px solid rgba(0, 136, 255, 0.3); padding-bottom: 15px;
+        .rules-box {
+            background: rgba(0, 136, 255, 0.1); border: 1px solid var(--primary-color);
+            border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: left;
+            font-size: 14px; line-height: 1.6; color: #EEDDFF;
         }
-        
-        .stage-badge { 
-            background: rgba(0, 136, 255, 0.2); color: var(--primary-color); 
-            padding: 5px 12px; font-weight: bold; font-size: 14px; 
-            border-radius: 8px; border: 1px solid var(--primary-color); 
-            text-shadow: 0 0 5px var(--primary-color);
-        }
+        .rules-box strong { color: var(--warning-color); }
 
-        .pixel-heart-bar { display: flex; gap: 6px; }
-        .pixel-heart { font-size: 20px; line-height: 1; filter: drop-shadow(0 0 5px var(--danger-color)); }
-        .pixel-heart.empty { filter: grayscale(100%) opacity(0.3); }
+        .status-ui { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(0, 136, 255, 0.3); padding-bottom: 10px;}
+        .stage-badge { background: rgba(0, 136, 255, 0.2); color: var(--primary-color); padding: 5px 12px; font-weight: bold; font-size: 14px; border-radius: 8px; border: 1px solid var(--primary-color); text-shadow: 0 0 5px var(--primary-color);}
         
-        .progress-container-adventure { display: flex; gap: 4px; justify-content: center; margin-top: 10px;}
-        .pixel-progress-segment { width: 100%; height: 6px; background-color: rgba(255,255,255,0.1); border-radius: 3px;}
+        .score-display { font-size: 16px; font-weight: bold; color: var(--warning-color); text-shadow: 0 0 8px var(--warning-color); }
+
+        .pixel-heart-bar { display: flex; gap: 4px; }
+        .pixel-heart { font-size: 18px; line-height: 1; filter: drop-shadow(0 0 5px var(--danger-color)); transition: transform 0.2s;}
+        .pixel-heart.empty { filter: grayscale(100%) opacity(0.2); transform: scale(0.8);}
+        
+        .progress-container-adventure { display: flex; gap: 4px; justify-content: center; margin-top: 5px; margin-bottom: 10px;}
+        .pixel-progress-segment { width: 100%; height: 5px; background-color: rgba(255,255,255,0.1); border-radius: 2px;}
         .pixel-progress-segment.active { background-color: var(--secondary-color); box-shadow: 0 0 8px var(--secondary-color);}
 
-        .question-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: var(--primary-color); text-shadow: 0 0 5px rgba(0,136,255,0.5);}
-        .question-subtitle { font-size: 14px; color: #88BBAA; margin-bottom: 10px; }
-        
-        .target-item { 
-            font-size: 60px; font-weight: 900; color: #FFFFFF; 
-            margin: 10px 0 0 0; text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--secondary-color); 
-        }
+        /* 雷射倒數計時器 */
+        .timer-container { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 15px; overflow: hidden; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+        .timer-bar { width: 100%; height: 100%; background: var(--success-color); box-shadow: 0 0 10px var(--success-color); transition: width 0.1s linear, background-color 0.3s; }
 
-        /* 拼音專屬顯示樣式 */
-        .target-pinyin {
-            font-size: 22px; font-weight: bold; color: var(--pinyin-color);
-            margin-bottom: 15px; letter-spacing: 1.5px;
-            font-family: 'Arial', sans-serif;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
-        }
+        .question-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: var(--primary-color); text-shadow: 0 0 5px rgba(0,136,255,0.5);}
+        .question-subtitle { font-size: 14px; color: #88BBAA; margin-bottom: 5px; }
+        
+        .target-item { font-size: 55px; font-weight: 900; color: #FFFFFF; margin: 5px 0 0 0; text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--secondary-color); }
+        .target-pinyin { font-size: 20px; font-weight: bold; color: var(--pinyin-color); margin-bottom: 15px; margin-top: 5px; letter-spacing: 1px; font-family: 'Arial', sans-serif; text-shadow: 0 0 10px rgba(0, 255, 255, 0.6); }
 
         .btn {
-            display: block; width: 100%; 
-            background: rgba(10, 10, 25, 0.8); 
-            border: 2px solid var(--primary-color); 
-            padding: 15px; margin: 12px 0; font-size: 18px; font-family: inherit; font-weight: bold;
-            color: #FFFFFF; cursor: pointer; transition: all 0.3s ease; border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 136, 255, 0.3), inset 0 0 10px rgba(0, 136, 255, 0.1);
+            display: block; width: 100%; background: rgba(10, 10, 25, 0.8); border: 2px solid var(--primary-color); 
+            padding: 12px; margin: 10px 0; font-size: 16px; font-family: inherit; font-weight: bold;
+            color: #FFFFFF; cursor: pointer; transition: all 0.2s ease; border-radius: 8px;
         }
-        .btn:active { transform: scale(0.96); }
-        .btn:hover { background: rgba(0, 136, 255, 0.2); box-shadow: 0 0 25px rgba(0, 136, 255, 0.6); }
+        .btn:active { transform: scale(0.94); }
 
-        #options-container .btn:nth-child(1) { border-color: #FF3366; box-shadow: 0 0 15px rgba(255, 51, 102, 0.3), inset 0 0 10px rgba(255, 51, 102, 0.1); }
-        #options-container .btn:nth-child(1):hover { background: rgba(255, 51, 102, 0.2); box-shadow: 0 0 25px rgba(255, 51, 102, 0.6), inset 0 0 15px rgba(255, 51, 102, 0.3); text-shadow: 0 0 8px #FF3366; }
+        #options-container .btn:nth-child(1) { border-color: #FF3366; }
+        #options-container .btn:nth-child(1):hover { background: rgba(255, 51, 102, 0.2); box-shadow: 0 0 20px rgba(255, 51, 102, 0.6); text-shadow: 0 0 5px white;}
+        #options-container .btn:nth-child(2) { border-color: #FFCC00; }
+        #options-container .btn:nth-child(2):hover { background: rgba(255, 204, 0, 0.2); box-shadow: 0 0 20px rgba(255, 204, 0, 0.6); text-shadow: 0 0 5px white;}
+        #options-container .btn:nth-child(3) { border-color: #00FF66; }
+        #options-container .btn:nth-child(3):hover { background: rgba(0, 255, 102, 0.2); box-shadow: 0 0 20px rgba(0, 255, 102, 0.6); text-shadow: 0 0 5px white;}
+        #options-container .btn:nth-child(4) { border-color: var(--primary-color); }
+        #options-container .btn:nth-child(4):hover { background: rgba(0, 136, 255, 0.2); box-shadow: 0 0 20px rgba(0, 136, 255, 0.6); text-shadow: 0 0 5px white;}
 
-        #options-container .btn:nth-child(2) { border-color: #FFCC00; box-shadow: 0 0 15px rgba(255, 204, 0, 0.3), inset 0 0 10px rgba(255, 204, 0, 0.1); }
-        #options-container .btn:nth-child(2):hover { background: rgba(255, 204, 0, 0.2); box-shadow: 0 0 25px rgba(255, 204, 0, 0.6), inset 0 0 15px rgba(255, 204, 0, 0.3); text-shadow: 0 0 8px #FFCC00; }
-
-        #options-container .btn:nth-child(3) { border-color: #00FF66; box-shadow: 0 0 15px rgba(0, 255, 102, 0.3), inset 0 0 10px rgba(0, 255, 102, 0.1); }
-        #options-container .btn:nth-child(3):hover { background: rgba(0, 255, 102, 0.2); box-shadow: 0 0 25px rgba(0, 255, 102, 0.6), inset 0 0 15px rgba(0, 255, 102, 0.3); text-shadow: 0 0 8px #00FF66; }
-        
         #feedback-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 5, 16, 0.85); backdrop-filter: blur(15px);
+            background: rgba(5, 5, 16, 0.95); backdrop-filter: blur(15px);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            border: 2px solid var(--primary-color); z-index: 100; box-sizing: border-box; padding: 20px;
-            border-radius: 15px;
+            border: 2px solid var(--primary-color); z-index: 100; box-sizing: border-box; padding: 20px; border-radius: 15px;
         }
-        .feedback-icon { font-size: 70px; margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.5));}
-        .feedback-text-zh { font-size: 26px; font-weight: bold; margin-bottom: 5px; color: var(--success-color); text-shadow: 0 0 10px var(--success-color);}
-        .feedback-text-vn { font-size: 18px; color: #AACCFF; margin-bottom: 25px; }
-        .next-btn { border-color: var(--primary-color); width: 90%; }
+        .feedback-icon { font-size: 65px; margin-bottom: 5px; }
+        .feedback-text-zh { font-size: 24px; font-weight: bold; margin-bottom: 5px; color: var(--success-color); }
+        .feedback-text-vn { font-size: 16px; color: #AACCFF; margin-bottom: 10px; text-align: center;}
+        .feedback-score { font-size: 20px; font-weight: bold; color: var(--warning-color); margin-bottom: 20px; text-shadow: 0 0 10px var(--warning-color);}
+        .next-btn { border-color: var(--primary-color); width: 90%; font-size: 18px; padding: 12px; background: rgba(0,136,255,0.2);}
         
+        /* 終極結算特效 */
+        .rank-display { font-size: 80px; font-weight: 900; margin: 10px 0; font-style: italic; }
+        .rank-sss { color: #FFCC00; text-shadow: 0 0 20px #FFCC00, 0 0 40px #FF3366, 0 0 60px #9933FF; animation: pulse 1s infinite alternate;}
+        .rank-s { color: #FF3366; text-shadow: 0 0 20px #FF3366; }
+        .rank-a { color: #00FF66; text-shadow: 0 0 20px #00FF66; }
+        .rank-b { color: #0088FF; text-shadow: 0 0 20px #0088FF; }
+        .rank-c { color: #888888; text-shadow: 0 0 10px #888888; }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
     </style>
 </head>
 <body>
 
 <div class="vr-reticle"></div>
 
-<div id="app">
-    <div id="screen-start">
-        <h1>部首冒險：VR全息訓練</h1>
-        <div class="subtitle">Huấn luyện Thực tế ảo: Bộ thủ</div>
-        <div class="target-item">🥽</div>
-        <div style="font-size: 14px; color:#AACCFF; margin-bottom:20px; font-weight:bold;">包含 5 關卡，共 50 題挑戰！</div>
-        <button class="btn" onclick="startGame()">啟動系統 (Khởi động)</button>
+<div class="vr-panel" id="screen-start">
+    <h1>部首冒險：VR全息訓練</h1>
+    <div class="subtitle">Huấn luyện Thực tế ảo: Bộ thủ</div>
+    
+    <div class="rules-box">
+        <div style="text-align: center; font-size: 18px; margin-bottom: 10px;"><strong>📋 遊戲規則 (Luật chơi)</strong></div>
+        
+        1. <strong>關卡與題目</strong>：共 5 個關卡，每關 10 題，總計 50 題。<br>
+        <span style="font-size:13px; color:#88BBAA;">(Có 5 màn, mỗi màn 10 câu, tổng cộng 50 câu.)</span><br><br>
+        
+        2. <strong>生命值</strong>：初始 5 顆愛心 (❤️)。答錯或超時扣 1 顆，過關可補滿。<br>
+        <span style="font-size:13px; color:#88BBAA;">(Khởi đầu có 5 mạng (❤️). Trả lời sai hoặc hết giờ trừ 1 mạng, qua màn hồi đầy.)</span><br><br>
+        
+        3. <strong>限時與連擊</strong>：每題皆有倒數計時！答題越快、連對越多，分數越高。<br>
+        <span style="font-size:13px; color:#88BBAA;">(Mỗi câu đều có thời gian! Trả lời càng nhanh, đúng liên tiếp càng nhiều, điểm càng cao.)</span><br><br>
+        
+        4. <strong>目標</strong>：挑戰極限，爭奪最高榮耀 <strong>[SSS級]</strong> 評價！<br>
+        <span style="font-size:13px; color:#88BBAA;">(Mục tiêu: Thử thách giới hạn, giành lấy đánh giá cao nhất [Hạng SSS]!)</span>
     </div>
 
-    <div id="screen-game" class="hidden">
-        <div class="status-ui" id="status-ui-container">
-            <div class="stage-badge" id="stage-badge">關卡 1 / 5</div>
-            <div class="pixel-heart-bar">
-                <div class="pixel-heart" id="heart-1">❤️</div>
-                <div class="pixel-heart" id="heart-2">❤️</div>
-                <div class="pixel-heart" id="heart-3">❤️</div>
-                <div class="pixel-heart" id="heart-4">❤️</div>
-                <div class="pixel-heart" id="heart-5">❤️</div>
-            </div>
+    <button class="btn" onclick="startLevelIntro()" style="font-size: 18px; border-color: var(--success-color);">連接系統 (Khởi động)</button>
+</div>
+
+<div class="vr-panel hidden" id="screen-level-intro">
+    <h1 id="intro-title-zh" style="color: var(--warning-color);">關卡 X</h1>
+    <div class="subtitle" id="intro-title-vn">Màn X</div>
+    <div class="rules-box" style="text-align: center; padding: 20px 15px; border-color: var(--warning-color);">
+        <div style="font-size: 18px; font-weight: bold; color: var(--success-color); margin-bottom: 8px;" id="intro-desc-zh">說明</div>
+        <div style="font-size: 15px; color: #AACCFF;" id="intro-desc-vn">Hướng dẫn</div>
+        <div id="intro-time-warning" style="margin-top:10px; font-weight:bold; color:var(--danger-color); font-size:16px;">⏱️ 限時: 10秒</div>
+    </div>
+    <button class="btn" onclick="startGameplay()" style="font-size: 18px; border-color: var(--secondary-color);">確認準備 (Sẵn sàng)</button>
+</div>
+
+<div class="vr-panel hidden" id="screen-game">
+    <div class="status-ui">
+        <div class="stage-badge" id="stage-badge">關卡 1 / 5</div>
+        <div class="score-display" id="score-display">SCORE: 0</div>
+        <div class="pixel-heart-bar">
+            <div class="pixel-heart" id="heart-1">❤️</div>
+            <div class="pixel-heart" id="heart-2">❤️</div>
+            <div class="pixel-heart" id="heart-3">❤️</div>
+            <div class="pixel-heart" id="heart-4">❤️</div>
+            <div class="pixel-heart" id="heart-5">❤️</div>
         </div>
-        <div class="progress-container-adventure" id="progress-container-adventure"></div>
-
-        <div class="question-title" id="q-title-zh"></div>
-        <div class="question-subtitle" id="q-title-vn"></div>
-        
-        <div class="target-item" id="q-target"></div>
-        <div class="target-pinyin" id="q-pinyin"></div>
-        
-        <div id="options-container"></div>
     </div>
+    <div class="progress-container-adventure" id="progress-container-adventure"></div>
+    
+    <div class="timer-container"><div class="timer-bar" id="timer-bar"></div></div>
 
-    <div id="screen-end" class="hidden">
-        <h1>訓練完成！系統解除</h1>
-        <div class="subtitle">Hoàn thành huấn luyện! Ngắt kết nối</div>
-        <div class="target-item">🏆</div>
-        <h2 id="final-score" style="color: var(--success-color); text-shadow: 0 0 10px var(--success-color);">總答對: 50 / 50</h2>
-        <button class="btn" onclick="location.reload()">重新啟動 (Chơi lại)</button>
-    </div>
+    <div class="question-title" id="q-title-zh">標題</div>
+    <div class="question-subtitle" id="q-title-vn">Subtitle</div>
+    <div class="target-item" id="q-target">🎯</div>
+    <div class="target-pinyin" id="q-pinyin">pinyin</div>
+    <div id="options-container"></div>
+</div>
 
-    <div id="screen-gameover" class="hidden">
-        <h1 style="color: var(--danger-color); text-shadow: 0 0 10px var(--danger-color);">系統崩潰！任務失敗</h1>
-        <div class="subtitle">Hệ thống sập! Nhiệm vụ thất bại</div>
-        <div class="target-item">💀</div>
-        <button class="btn" onclick="location.reload()">重新啟動 (Chơi lại)</button>
-    </div>
+<div class="vr-panel hidden" id="screen-end">
+    <h1>訓練完成！系統評級</h1>
+    <div class="subtitle">Hoàn thành! Đánh giá hệ thống</div>
+    <div class="rank-display" id="final-rank">S</div>
+    <div style="font-size: 18px; margin-bottom: 5px;">總分 SCORE: <span id="final-score" style="color:var(--warning-color); font-weight:bold;">0</span></div>
+    <div style="font-size: 14px; color: #AACCFF; margin-bottom: 20px;">最大連擊 Max Combo: <span id="final-combo" style="color:white;">0</span></div>
+    <button class="btn" onclick="location.reload()">重新挑戰 (Thử lại)</button>
+</div>
 
-    <div id="feedback-modal" class="hidden">
-        <div class="feedback-icon" id="fb-icon"></div>
-        <div class="feedback-text-zh" id="fb-zh"></div>
-        <div class="feedback-text-vn" id="fb-vn"></div>
-        <button class="btn next-btn" id="fb-btn" onclick="closeFeedback()">確認 (Xác nhận)</button>
-    </div>
+<div class="vr-panel hidden" id="screen-gameover">
+    <h1 style="color: var(--danger-color);">系統崩潰！任務失敗</h1>
+    <div class="target-item">💀</div>
+    <div style="font-size: 16px; margin: 15px 0;">最終分數: <span id="fail-score" style="color:var(--warning-color); font-weight:bold;">0</span></div>
+    <button class="btn" onclick="location.reload()">重啟連接 (Kết nối lại)</button>
+</div>
+
+<div id="feedback-modal" class="hidden">
+    <div class="feedback-icon" id="fb-icon"></div>
+    <div class="feedback-text-zh" id="fb-zh"></div>
+    <div class="feedback-text-vn" id="fb-vn"></div>
+    <div class="feedback-score" id="fb-score"></div>
+    <button class="btn next-btn" id="fb-btn" onclick="closeFeedback()">繼續 (Tiếp tục)</button>
 </div>
 
 <script>
@@ -208,128 +247,121 @@
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
     function playCorrectSound() { initAudio(); playTone(987.77, 'sine', 0.1, 0.1); setTimeout(() => playTone(1318.51, 'sine', 0.2, 0.1), 100); }
-    function playWrongSound() { initAudio(); playTone(150, 'sawtooth', 0.3, 0.2); }
+    function playWrongSound() { initAudio(); playTone(150, 'sawtooth', 0.4, 0.3); setTimeout(() => playTone(100, 'sawtooth', 0.3, 0.3), 100); }
     function playLevelUpSound() { initAudio(); playTone(261.63, 'square', 0.1); setTimeout(() => playTone(392.00, 'square', 0.1), 150); setTimeout(() => playTone(523.25, 'square', 0.3), 300); }
+    
+    let heartbeatInterval;
+    function startHeartbeat() {
+        if (heartbeatInterval) return;
+        document.getElementById('screen-game').classList.add('low-health-active');
+        heartbeatInterval = setInterval(() => {
+            initAudio(); playTone(100, 'sine', 0.1, 0.4); setTimeout(() => playTone(100, 'sine', 0.15, 0.3), 150);
+        }, 1000);
+    }
+    function stopHeartbeat() {
+        clearInterval(heartbeatInterval); heartbeatInterval = null;
+        document.getElementById('screen-game').classList.remove('low-health-active');
+    }
 
-    // ==========================================
-    // 80題專屬題庫 (加入拼音，移除選項Emoji)
-    // ==========================================
     const questionBank = {
         1: [ 
-            { target: "人 🧍", pinyin: "rén", options: ["người (Người)", "dao (Dao)", "vách núi (Vách núi)"], answer: 0 },
-            { target: "刀 🔪", pinyin: "dāo", options: ["sức (Sức)", "dao (Dao)", "bước dài (Bước dài)"], answer: 1 },
-            { target: "力 💪", pinyin: "lì", options: ["sức (Sức)", "miệng (Miệng)", "tay (Tay)"], answer: 0 },
-            { target: "宀 🏠", pinyin: "mián", options: ["mái che (Mái che)", "mái nhà (Mái nhà)", "hang (Hang)"], answer: 1 },
-            { target: "心 ❤️", pinyin: "xīn", options: ["tim, lòng (Tim/Tình cảm)", "mặt trăng (Mặt trăng)", "thịt (Thịt)"], answer: 0 },
-            { target: "手 ✋", pinyin: "shǒu", options: ["tay (Tay)", "nói (Nói)", "cây (Cây)"], answer: 0 },
-            { target: "木 🌳", pinyin: "mù", options: ["nước (Nước)", "cây (Cây)", "lúa (Lúa)"], answer: 1 },
-            { target: "水 💧", pinyin: "shuǐ", options: ["nước (Nước)", "rượu (Rượu)", "côn trùng (Côn trùng)"], answer: 0 },
-            { target: "犬 🐕", pinyin: "quǎn", options: ["trâu, bò (Trâu bò)", "chó (Chó)", "heo (Heo)"], answer: 1 },
-            { target: "疒 🤒", pinyin: "chuáng", options: ["bệnh (Bệnh)", "thịt (Thịt)", "gò đất (Gò đất)"], answer: 0 },
-            { target: "糸 🧶", pinyin: "mì", options: ["tơ (Tơ lụa)", "gạo (Gạo)", "lúa (Lúa)"], answer: 0 },
-            { target: "肉 🥩", pinyin: "ròu", options: ["thịt (Thịt)", "quần áo (Quần áo)", "mặt trăng (Mặt trăng)"], answer: 0 },
-            { target: "舟 ⛵", pinyin: "zhōu", options: ["xe (Xe cộ)", "thuyền (Thuyền)", "chim (Chim)"], answer: 1 },
-            { target: "衣 👕", pinyin: "yī", options: ["quần áo (Quần áo)", "lời nói (Lời nói)", "cửa (Cửa)"], answer: 0 },
-            { target: "貝 🐚", pinyin: "bèi", options: ["vỏ sò, tiền (Vỏ sò/Tiền)", "kim loại (Kim loại)", "ngọc (Ngọc)"], answer: 0 },
-            { target: "食 🍚", pinyin: "shí", options: ["ăn (Ăn)", "uống (Uống)", "rượu (Rượu)"], answer: 0 }
+            { target: "人", pinyin: "rén", options: ["người 🧍", "dao 🔪", "núi ⛰️", "sức 💪"], answer: 0 },
+            { target: "冫", pinyin: "bīng", options: ["người 🧍", "băng ❄️", "dao 🔪", "sức 💪"], answer: 1 },
+            { target: "刀", pinyin: "dāo", options: ["sức 💪", "băng ❄️", "dao 🔪", "miệng 👄"], answer: 2 },
+            { target: "力", pinyin: "lì", options: ["lửa 🔥", "dao 🔪", "núi ⛰️", "sức 💪"], answer: 3 },
+            { target: "口", pinyin: "kǒu", options: ["sức 💪", "miệng 👄", "nữ 👩", "con 👶"], answer: 1 },
+            { target: "女", pinyin: "nǚ", options: ["con 👶", "miệng 👄", "nữ 👩", "nhà 🏠"], answer: 2 },
+            { target: "子", pinyin: "zǐ", options: ["miệng 👄", "nữ 👩", "nhà 🏠", "con 👶"], answer: 3 },
+            { target: "宀", pinyin: "mián", options: ["nhà 🏠", "mái che ⛺", "con 👶", "miệng 👄"], answer: 0 },
+            { target: "木", pinyin: "mù", options: ["nước 💧", "cây 🌳", "lúa 🌾", "gạo 🍚"], answer: 1 },
+            { target: "食", pinyin: "shí", options: ["ăn 🍽️", "uống 🥤", "rượu 🍷", "thịt 🥩"], answer: 0 }
         ],
         2: [ 
-            { target: "你 (Bạn) 🧍", pinyin: "nǐ", options: ["人 (亻)", "尔", "小"], answer: 0 },
-            { target: "冰 (Đá, lạnh) 🧊", pinyin: "bīng", options: ["水 (氵)", "冫", "人 (亻)"], answer: 1 },
-            { target: "吃 (Ăn) 🍽️", pinyin: "chī", options: ["口", "乞", "乙"], answer: 0 },
-            { target: "好 (Tốt) 👍", pinyin: "hǎo", options: ["子", "女", "一"], answer: 1 },
-            { target: "家 (Nhà) 🏠", pinyin: "jiā", options: ["宀", "豕", "一"], answer: 0 },
-            { target: "想 (Nhớ, nghĩ) 🤔", pinyin: "xiǎng", options: ["木", "目", "心"], answer: 2 },
-            { target: "打 (Đánh) 🥊", pinyin: "dǎ", options: ["手 (扌)", "丁", "一"], answer: 0 },
-            { target: "林 (Rừng) 🌲", pinyin: "lín", options: ["木", "八", "十"], answer: 0 },
-            { target: "海 (Biển) 🌊", pinyin: "hǎi", options: ["水 (氵)", "每", "母"], answer: 0 },
-            { target: "狗 (Chó) 🐕", pinyin: "gǒu", options: ["犬 (犭)", "句", "口"], answer: 0 },
-            { target: "病 (Bệnh) 🤒", pinyin: "bìng", options: ["疒", "丙", "一"], answer: 0 },
-            { target: "紅 (Đỏ) 🔴", pinyin: "hóng", options: ["糸 (糹)", "工", "一"], answer: 0 },
-            { target: "胖 (Béo) 🤰", pinyin: "pàng", options: ["肉 (月)", "半", "十"], answer: 0 },
-            { target: "說 (Nói) 🗣️", pinyin: "shuō", options: ["言", "兌", "口"], answer: 0 },
-            { target: "錢 (Tiền) 💰", pinyin: "qián", options: ["金 (釒)", "戔", "一"], answer: 0 },
-            { target: "飯 (Cơm) 🍚", pinyin: "fàn", options: ["食 (飠)", "反", "人"], answer: 0 }
+            { target: "想 (Nhớ)", pinyin: "xiǎng", options: ["木 🌳", "心 ❤️", "目 👀", "相 👤"], answer: 1 },
+            { target: "打 (Đánh)", pinyin: "dǎ", options: ["丁 📍", "一 1️⃣", "手/扌 ✋", "口 👄"], answer: 2 },
+            { target: "胖 (Béo)", pinyin: "pàng", options: ["半 🌗", "十 🔟", "人 🧍", "肉/月 🥩"], answer: 3 },
+            { target: "林 (Rừng)", pinyin: "lín", options: ["木 🌳", "八 8️⃣", "十 🔟", "人 🧍"], answer: 0 },
+            { target: "海 (Biển)", pinyin: "hǎi", options: ["每 📅", "水/氵 🌊", "母 👩", "人 🧍"], answer: 1 },
+            { target: "物 (Vật)", pinyin: "wù", options: ["勿 🚫", "力 💪", "牛/牜 🐄", "人 🧍"], answer: 2 },
+            { target: "狗 (Chó)", pinyin: "gǒu", options: ["句 📝", "口 👄", "手 ✋", "犬/犭 🐕"], answer: 3 },
+            { target: "國 (Quốc)", pinyin: "guó", options: ["囗 📦", "或 ❓", "口 👄", "一 1️⃣"], answer: 0 },
+            { target: "很 (Rất)", pinyin: "hěn", options: ["彳 🚶", "行 🚦", "艮 ⛰️", "人 🧍"], answer: 0 },
+            { target: "錢 (Tiền)", pinyin: "qián", options: ["金/釒 💰", "戔 ⚔️", "一 1️⃣", "貝 🐚"], answer: 0 }
         ],
         3: [ 
-            { target: "亻+ 尔 = ? 🧍", pinyin: "nǐ", options: ["你 (Bạn)", "他 (Anh ấy)", "休 (Nghỉ ngơi)"], answer: 0 },
-            { target: "女 + 子 = ? 👩‍👦", pinyin: "hǎo", options: ["好 (Tốt)", "媽 (Mẹ)", "姐 (Chị)"], answer: 0 },
-            { target: "宀 + 豕(heo) = ? 🐖🏠", pinyin: "jiā", options: ["家 (Nhà)", "字 (Chữ)", "安 (An toàn)"], answer: 0 },
-            { target: "木 + 木 = ? 🌳🌳", pinyin: "lín", options: ["林 (Rừng)", "樹 (Cây)", "本 (Bản)"], answer: 0 },
-            { target: "氵+ 每 = ? 💧🌊", pinyin: "hǎi", options: ["海 (Biển)", "河 (Sông)", "洗 (Rửa)"], answer: 0 },
-            { target: "犭+ 句 = ? 🐕", pinyin: "gǒu", options: ["狗 (Chó)", "貓 (Mèo)", "豬 (Heo)"], answer: 0 },
-            { target: "疒 + 丙 = ? 🤒", pinyin: "bìng", options: ["病 (Bệnh)", "痛 (Đau)", "瘦 (Gầy)"], answer: 0 },
-            { target: "糹+ 工 = ? 🧶🔴", pinyin: "hóng", options: ["紅 (Đỏ)", "綠 (Xanh)", "給 (Cho)"], answer: 0 },
-            { target: "衤+ 羊 = ? 👕🐑", pinyin: "qún", options: ["裙 (Váy)", "褲 (Quần)", "裝 (Trang phục)"], answer: 0 },
-            { target: "言 + 兌 = ? 🗣️", pinyin: "shuō", options: ["說 (Nói)", "請 (Mời)", "語 (Ngôn ngữ)"], answer: 0 },
-            { target: "中 + 貝 = ? 💰", pinyin: "guì", options: ["貴 (Đắt)", "買 (Mua)", "費 (Phí)"], answer: 0 },
-            { target: "辶+ 斤 = ? 🚶", pinyin: "jìn", options: ["近 (Gần)", "遠 (Xa)", "送 (Tặng)"], answer: 0 },
-            { target: "釒+ 戔 = ? 🪙", pinyin: "qián", options: ["錢 (Tiền)", "銀 (Bạc)", "錯 (Sai)"], answer: 0 },
-            { target: "門 + 口 = ? 🚪👄", pinyin: "wèn", options: ["問 (Hỏi)", "開 (Mở)", "間 (Gian/Phòng)"], answer: 0 },
-            { target: "飠+ 反 = ? 🍚", pinyin: "fàn", options: ["飯 (Cơm)", "飲 (Uống)", "餓 (Đói)"], answer: 0 },
-            { target: "日 + 月 = ? ☀️🌙", pinyin: "míng", options: ["明 (Sáng/Ngày mai)", "早 (Sớm)", "晚 (Muộn)"], answer: 0 }
+            { target: "亻+ 尔 = ? 🧍", pinyin: "nǐ", options: ["你", "他", "休", "仙"], answer: 0 },
+            { target: "女 + 子 = ? 👩‍👦", pinyin: "hǎo", options: ["好", "媽", "姐", "妹"], answer: 0 },
+            { target: "宀 + 豕 = ? 🐖🏠", pinyin: "jiā", options: ["家", "字", "安", "客"], answer: 0 },
+            { target: "木 + 木 = ? 🌳🌳", pinyin: "lín", options: ["林", "樹", "本", "果"], answer: 0 },
+            { target: "氵+ 每 = ? 💧🌊", pinyin: "hǎi", options: ["海", "河", "洗", "渴"], answer: 0 },
+            { target: "犭+ 句 = ? 🐕📝", pinyin: "gǒu", options: ["狗", "貓", "豬", "猴"], answer: 0 },
+            { target: "疒 + 丙 = ? 🤒💊", pinyin: "bìng", options: ["病", "痛", "瘦", "療"], answer: 0 },
+            { target: "糹 + 工 = ? 🧶🔴", pinyin: "hóng", options: ["紅", "綠", "給", "線"], answer: 0 },
+            { target: "言 + 兌 = ? 🗣️💬", pinyin: "shuō", options: ["說", "請", "語", "話"], answer: 0 },
+            { target: "日 + 月 = ? ☀️🌙", pinyin: "míng", options: ["明", "早", "晚", "星"], answer: 0 }
         ],
         4: [ 
-            { target: "___客 (Mời khách) 🍵", pinyin: "qǐng kè", options: ["請 (言)", "清 (水)", "情 (心)"], answer: 0 },
-            { target: "___水 (Uống nước) 🚰", pinyin: "hē shuǐ", options: ["喝 (口)", "渴 (水)", "唱 (口)"], answer: 0 },
-            { target: "心___ (Tâm tình) 💌", pinyin: "xīn qíng", options: ["情 (心)", "晴 (日)", "請 (言)"], answer: 0 },
-            { target: "___天 (Trời nắng) ☀️", pinyin: "qíng tiān", options: ["晴 (日)", "睛 (目)", "情 (心)"], answer: 0 },
-            { target: "___字 (Đánh chữ) ⌨️", pinyin: "dǎ zì", options: ["打 (手)", "找 (手)", "訂 (言)"], answer: 0 },
-            { target: "___ (Gia đình) 👨‍👩‍👧‍👦", pinyin: "jiā", options: ["家 (宀)", "嫁 (女)", "稼 (禾)"], answer: 0 },
-            { target: "生___ (Bị bệnh) 🤒", pinyin: "shēng bìng", options: ["病 (疒)", "丙 (一)", "炳 (火)"], answer: 0 },
-            { target: "小___ (Con chó) 🐕", pinyin: "gǒu", options: ["狗 (犬)", "夠 (夕)", "句 (口)"], answer: 0 },
-            { target: "___行 (Ngân hàng) 🏦", pinyin: "yín háng", options: ["銀 (金)", "很 (彳)", "跟 (足)"], answer: 0 },
-            { target: "分___ (Đồng hồ/Phút) ⏱️", pinyin: "fēn zhōng", options: ["鐘 (金)", "懂 (心)", "種 (禾)"], answer: 0 },
-            { target: "___飯 (Ăn cơm) 🍚", pinyin: "chī fàn", options: ["吃 (口)", "氣 (气)", "汽 (水)"], answer: 0 },
-            { target: "顏___ (Màu sắc) 🎨", pinyin: "yán sè", options: ["色 (色)", "紅 (糸)", "江 (水)"], answer: 0 },
-            { target: "牛___ (Thịt bò) 🥩", pinyin: "niú ròu", options: ["肉 (肉)", "內 (入)", "月 (月)"], answer: 0 },
-            { target: "___菜 (Mua rau) 🛒", pinyin: "mǎi cài", options: ["買 (貝)", "賣 (士)", "實 (宀)"], answer: 0 },
-            { target: "明___ (Ngày mai) 📅", pinyin: "míng tiān", options: ["天 (大)", "夫 (大)", "太 (大)"], answer: 0 },
-            { target: "___話 (Nói chuyện) 🗣️", pinyin: "shuō huà", options: ["說 (言)", "脫 (肉)", "銳 (金)"], answer: 0 }
+            { target: "___客", pinyin: "qǐng kè", options: ["請", "清", "情", "晴"], answer: 0 },
+            { target: "___水", pinyin: "hē shuǐ", options: ["喝", "渴", "唱", "晶"], answer: 0 },
+            { target: "心___", pinyin: "xīn qíng", options: ["情", "晴", "請", "清"], answer: 0 },
+            { target: "___天", pinyin: "qíng tiān", options: ["晴", "睛", "情", "清"], answer: 0 },
+            { target: "___字", pinyin: "dǎ zì", options: ["打", "找", "訂", "釘"], answer: 0 },
+            { target: "___庭", pinyin: "jiā tíng", options: ["家", "嫁", "稼", "加"], answer: 0 },
+            { target: "生___", pinyin: "shēng bìng", options: ["病", "丙", "炳", "柄"], answer: 0 },
+            { target: "小___", pinyin: "xiǎo gǒu", options: ["狗", "夠", "句", "拘"], answer: 0 },
+            { target: "___行", pinyin: "yín háng", options: ["銀", "很", "跟", "根"], answer: 2 },
+            { target: "分___", pinyin: "fēn zhōng", options: ["鐘", "懂", "種", "重"], answer: 0 }
         ],
         5: [ 
-            { target: "「冰箱」🧊", pinyin: "bīng xiāng", options: ["Băng/Lạnh (冫)", "Lửa (火)", "Đất (土)"], answer: 0 },
-            { target: "「疾病」🤒", pinyin: "jí bìng", options: ["Bệnh tật (疒)", "Lúa (禾)", "Lợn (豕)"], answer: 0 },
-            { target: "「絲綢」🧣", pinyin: "sī chóu", options: ["Tơ lụa (糸)", "Nước (水)", "Kim loại (金)"], answer: 0 },
-            { target: "「艦艇」🚢", pinyin: "jiàn tǐng", options: ["Thuyền (舟)", "Chim (隹)", "Hang động (穴)"], answer: 0 },
-            { target: "「蜘蛛」🕷️", pinyin: "zhī zhū", options: ["Côn trùng (虫)", "Thú dữ (豸)", "Chim (隹)"], answer: 0 },
-            { target: "「詞語」💬", pinyin: "cí yǔ", options: ["Lời nói (言)", "Tiền bạc (貝)", "Bước đi (辶)"], answer: 0 },
-            { target: "「財富」💎", pinyin: "cái fù", options: ["Tiền bạc (貝)", "Làng mạc (邑)", "Quần áo (衣)"], answer: 0 },
-            { target: "「鋼鐵」⚙️", pinyin: "gāng tiě", options: ["Kim loại (金)", "Gỗ (木)", "Rượu (酉)"], answer: 0 },
-            { target: "「閱讀」📖", pinyin: "yuè dú", options: ["Ngôn ngữ (言)", "Cửa (門)", "Thức ăn (食)"], answer: 0 },
-            { target: "「餐廳」🍴", pinyin: "cān tīng", options: ["Ăn uống (食)", "Mái nhà (宀)", "Đánh khẽ (支)"], answer: 0 },
-            { target: "「悲傷」😢", pinyin: "bēi shāng", options: ["Cảm xúc (心)", "Bệnh tật (疒)", "Lực/Sức (力)"], answer: 0 },
-            { target: "「擁抱」🫂", pinyin: "yǒng bào", options: ["Tay/Hành động (手)", "Bước chân (彳)", "Cơ thể (肉)"], answer: 0 },
-            { target: "「宇宙」🌌", pinyin: "yǔ zhòu", options: ["Không gian (宀)", "Bát đĩa (皿)", "Hang (穴)"], answer: 0 },
-            { target: "「稻麥」🌾", pinyin: "dào mài", options: ["Cây trồng (禾)", "Gạo (米)", "Cây gai (麻)"], answer: 0 },
-            { target: "「肌膚」💆", pinyin: "jī fū", options: ["Cơ thể (肉)", "Lông/Tóc (髟)", "Quần áo (衣)"], answer: 0 },
-            { target: "「飛禽」🦅", pinyin: "fēi qín", options: ["Chim (隹)", "Chó (犬)", "Hổ (虍)"], answer: 0 }
+            { target: "<div style='font-size:22px;'>Bạn đang rất đói bụng,<br>nên vào cửa hàng nào?</div>", pinyin: "Bộ 食 (Ăn uống)", options: ["餐廳", "體育館", "醫院", "銀行"], answer: 0 },
+            { target: "<div style='font-size:22px;'>Bạn muốn cắt tóc,<br>nên chọn tiệm có chữ nào?</div>", pinyin: "Bộ 髟 (Tóc)", options: ["餐廳", "髮廊", "藥局", "服飾店"], answer: 1 },
+            { target: "<div style='font-size:22px;'>Bộ '阜' (阝) là đồi núi.<br>Chữ nào chỉ sự rào cản?</div>", pinyin: "Bộ 阜 (Đồi núi)", options: ["助", "租", "祖", "阻"], answer: 3 },
+            { target: "<div style='font-size:22px;'>Tìm nơi trốn mưa (hang động),<br>chữ nào có thể giúp bạn?</div>", pinyin: "Bộ 穴 (Hang lỗ)", options: ["房屋", "洞穴", "樹林", "帳篷"], answer: 1 },
+            { target: "<div style='font-size:22px;'>Muốn lên men trái cây,<br>cần bình chứa có bộ nào?</div>", pinyin: "Bộ 酉 (Bình rượu)", options: ["水", "皿", "缶", "酉"], answer: 3 },
+            { target: "<div style='font-size:22px;'>Khi mệt mỏi và ngáp,<br>bạn thường mở miệng làm gì?</div>", pinyin: "Bộ 欠 (Há miệng)", options: ["打哈欠", "唱歌", "說話", "呼吸"], answer: 0 },
+            { target: "<div style='font-size:22px;'>Bộ '頁' liên quan đến đầu.<br>Chữ nào chỉ bộ phận đầu?</div>", pinyin: "Bộ 頁 (Đầu)", options: ["手", "頭", "腳", "肚子"], answer: 1 },
+            { target: "<div style='font-size:22px;'>Chữ '絲綢' (lụa) liên quan tơ.<br>Bộ thủ là gì?</div>", pinyin: "Bộ 糸 (Tơ lụa)", options: ["糸", "木", "水", "金"], answer: 0 },
+            { target: "<div style='font-size:22px;'>Con vật linh thiêng 'Hổ',<br>có bộ thủ đặc trưng là:</div>", pinyin: "Bộ 虍 (Vằn hổ)", options: ["犬", "虍", "鳥", "魚"], answer: 1 },
+            { target: "<div style='font-size:22px;'>Đang nấu cháo lúa mạch,<br>nồi cháo có bộ thủ gì?</div>", pinyin: "Bộ 禾 (Lúa trồng)", options: ["禾", "艸", "木", "金"], answer: 0 }
         ]
     };
 
-    const difficultyTitles = {
-        1: { zh: "SYSTEM.STAGE_1 [基礎辨識]", vn: "Hệ thống: Màn 1 [Nhận biết]" },
-        2: { zh: "SYSTEM.STAGE_2 [結構掃描]", vn: "Hệ thống: Màn 2 [Quét cấu trúc]" },
-        3: { zh: "SYSTEM.STAGE_3 [部件重組]", vn: "Hệ thống: Màn 3 [Tái tổ hợp]" },
-        4: { zh: "SYSTEM.STAGE_4 [陷阱排除]", vn: "Hệ thống: Màn 4 [Loại bỏ bẫy]" },
-        5: { zh: "SYSTEM.STAGE_5 [語義推論]", vn: "Hệ thống: Màn 5 [Suy luận]" }
+    const levelIntros = {
+        1: { zhTitle: "Màn 1: Nhận biết", vnTitle: "第一關：基礎辨識", zhDesc: "👉 Hãy chọn 'ý nghĩa tiếng Việt' đúng cho bộ thủ.", vnDesc: "請選出部首正確的越南語意思。", time: 10 },
+        2: { zhTitle: "Màn 2: Quét cấu trúc", vnTitle: "第二關：結構掃描", zhDesc: "👉 Hãy chọn 'bộ thủ' có trong chữ Hán đó.", vnDesc: "請選出漢字所屬的部首。", time: 10 },
+        3: { zhTitle: "Màn 3: Tái tổ hợp", vnTitle: "第三關：部件重組", zhDesc: "👉 Hãy ghép 'bộ thủ' để tạo ra chữ Hán đúng.", vnDesc: "請拼湊出正確的漢字。", time: 10 },
+        4: { zhTitle: "Màn 4: Loại bỏ bẫy", vnTitle: "第四關：真假陷阱", zhDesc: "👉 Cảnh báo! Không có gợi ý tiếng Việt ở đáp án.", vnDesc: "警告！選項不再提供越南文輔助。", time: 8 },
+        5: { zhTitle: "Màn 5: Suy luận", vnTitle: "第五關：情境推論", zhDesc: "👉 Dựa vào tình huống để đoán chữ Hán đúng.", vnDesc: "根據情境，利用部首知識推論答案。", time: 7 }
     };
 
     const QUESTIONS_PER_LEVEL = 10; 
-    const TOTAL_LEVELS = 5;
-    const MAX_HEALTH = 5;
+    let currentLevel = 1, questionsAnsweredInLevel = 0, currentHealth = 5, currentLevelQuestions = []; 
+    
+    // 計分與連擊系統
+    let totalScore = 0;
+    let currentCombo = 0;
+    let maxCombo = 0;
+    
+    // 計時器系統
+    let timerInterval;
+    let timeLimit = 10;
+    let timeLeft = 10;
 
-    let currentLevel = 1; 
-    let questionsAnsweredInLevel = 0;
-    let totalCorrectCount = 0;
-    let currentHealth = MAX_HEALTH;
-    let currentLevelQuestions = []; 
+    function startLevelIntro() { initAudio(); document.getElementById("screen-start").classList.add("hidden"); showLevelIntroScreen(); }
 
-    function startGame() {
-        initAudio(); 
-        document.getElementById("screen-start").classList.add("hidden");
+    function showLevelIntroScreen() {
+        const intro = levelIntros[currentLevel];
+        document.getElementById("intro-title-zh").innerText = intro.vnTitle;
+        document.getElementById("intro-title-vn").innerText = intro.zhTitle;
+        document.getElementById("intro-desc-zh").innerText = intro.vnDesc;
+        document.getElementById("intro-desc-vn").innerText = intro.zhDesc;
+        document.getElementById("intro-time-warning").innerText = `⏱️ 限時: ${intro.time} 秒 / câu`;
+        document.getElementById("screen-level-intro").classList.remove("hidden");
+    }
+
+    function startGameplay() {
+        document.getElementById("screen-level-intro").classList.add("hidden");
         document.getElementById("screen-game").classList.remove("hidden");
-        
         const progressContainer = document.getElementById("progress-container-adventure");
         progressContainer.innerHTML = "";
         for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
@@ -338,7 +370,6 @@
             segment.id = `progress-segment-${i}`;
             progressContainer.appendChild(segment);
         }
-        
         prepareLevel();
     }
 
@@ -347,47 +378,61 @@
         let pool = [...questionBank[currentLevel]];
         pool.sort(() => Math.random() - 0.5); 
         currentLevelQuestions = pool.slice(0, QUESTIONS_PER_LEVEL); 
-        
+        timeLimit = levelIntros[currentLevel].time;
         updatePixelUI();
         loadNextQuestion();
     }
 
     function updatePixelUI() {
-        document.getElementById("stage-badge").innerText = `訓練進度 ${currentLevel} / ${TOTAL_LEVELS}`;
+        document.getElementById("stage-badge").innerText = `STAGE ${currentLevel} / 5`;
+        document.getElementById("score-display").innerText = `SCORE: ${totalScore}`;
         
-        for (let i = 1; i <= MAX_HEALTH; i++) {
+        for (let i = 1; i <= 5; i++) {
             const heart = document.getElementById(`heart-${i}`);
-            if (i <= currentHealth) {
-                heart.classList.remove("empty");
-            } else {
-                heart.classList.add("empty");
-            }
+            heart.classList.toggle("empty", i > currentHealth);
         }
         
+        if (currentHealth === 1) startHeartbeat();
+        else stopHeartbeat();
+
         for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
             const segment = document.getElementById(`progress-segment-${i}`);
-            if (i < questionsAnsweredInLevel) {
-                segment.classList.add("active");
-            } else {
-                segment.classList.remove("active");
-            }
+            segment.classList.toggle("active", i < questionsAnsweredInLevel);
         }
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timeLeft = timeLimit;
+        updateTimerUI();
+        timerInterval = setInterval(() => {
+            timeLeft -= 0.1;
+            updateTimerUI();
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                handleTimeout();
+            }
+        }, 100);
+    }
+
+    function updateTimerUI() {
+        const bar = document.getElementById('timer-bar');
+        const pct = Math.max(0, (timeLeft / timeLimit) * 100);
+        bar.style.width = pct + '%';
+        if (pct > 50) { bar.style.backgroundColor = 'var(--success-color)'; bar.style.boxShadow = '0 0 10px var(--success-color)'; }
+        else if (pct > 25) { bar.style.backgroundColor = 'var(--warning-color)'; bar.style.boxShadow = '0 0 10px var(--warning-color)'; }
+        else { bar.style.backgroundColor = 'var(--danger-color)'; bar.style.boxShadow = '0 0 10px var(--danger-color)'; }
     }
 
     function loadNextQuestion() {
         updatePixelUI();
         const currentQ = currentLevelQuestions[questionsAnsweredInLevel];
-
-        document.getElementById("q-title-zh").innerText = difficultyTitles[currentLevel].zh;
-        document.getElementById("q-title-vn").innerText = difficultyTitles[currentLevel].vn;
-        
-        // 渲染題目與拼音
-        document.getElementById("q-target").innerText = currentQ.target;
+        document.getElementById("q-title-zh").innerText = levelIntros[currentLevel].vnTitle.split("：")[1];
+        document.getElementById("q-title-vn").innerText = levelIntros[currentLevel].zhTitle.split(": ")[1];
+        document.getElementById("q-target").innerHTML = currentQ.target;
         document.getElementById("q-pinyin").innerText = currentQ.pinyin;
-
         const optionsContainer = document.getElementById("options-container");
         optionsContainer.innerHTML = "";
-        
         currentQ.options.forEach((opt, index) => {
             const btn = document.createElement("button");
             btn.className = "btn";
@@ -395,83 +440,117 @@
             btn.onclick = () => checkAnswer(index, currentQ.answer);
             optionsContainer.appendChild(btn);
         });
+        startTimer(); // 開始計時
+    }
+
+    function triggerScreenShake() {
+        const panel = document.getElementById('screen-game');
+        panel.classList.remove('shake-active');
+        void panel.offsetWidth; // trigger reflow
+        panel.classList.add('shake-active');
+        setTimeout(() => panel.classList.remove('shake-active'), 400);
+    }
+
+    function handleTimeout() {
+        playWrongSound(); triggerScreenShake();
+        currentCombo = 0; currentHealth--;
+        if (currentHealth <= 0) { setTimeout(gameOver, 800); return; }
+        showFeedback(false, "時間到！系統短路", "Hết giờ! Chập mạch (-1 ❤️)", 0);
     }
 
     function checkAnswer(selectedIndex, correctIndex) {
+        clearInterval(timerInterval); // 停止計時
+        
         if (selectedIndex === correctIndex) {
-            totalCorrectCount++;
+            currentCombo++;
+            if (currentCombo > maxCombo) maxCombo = currentCombo;
+            
+            // 計算分數：基礎100 + 時間紅利 + 連擊加成
+            let timeBonus = Math.floor(timeLeft * 10);
+            let comboBonus = currentCombo * 20;
+            let earnedScore = 100 + timeBonus + comboBonus;
+            totalScore += earnedScore;
+            
             questionsAnsweredInLevel++;
             
             if (questionsAnsweredInLevel >= QUESTIONS_PER_LEVEL) {
-                playLevelUpSound(); 
-                if (currentLevel === TOTAL_LEVELS) {
-                    showFeedback(true, "數據同步完成！🎉", "Đồng bộ dữ liệu hoàn tất!");
-                } else {
-                    showFeedback(true, "階段完成！系統修復💖", "Qua màn! Phục hồi hệ thống!");
-                }
+                playLevelUpSound();
+                showFeedback(true, "數據同步完成！🎉", "Đồng bộ dữ liệu hoàn tất! Hồi máu!", earnedScore);
             } else {
-                playCorrectSound(); 
-                showFeedback(true, "解析正確！ 🌟", "Phân tích chính xác! ✨");
+                playCorrectSound();
+                let comboText = currentCombo >= 3 ? `🔥 ${currentCombo} Combo!` : "🌟";
+                showFeedback(true, `解析正確！ ${comboText}`, "Phân tích chính xác!", earnedScore);
             }
         } else {
-            playWrongSound(); 
-            currentHealth--;
+            playWrongSound(); triggerScreenShake();
+            currentCombo = 0; currentHealth--;
             
-            if (currentHealth <= 0) {
-                setTimeout(gameOver, 800); 
-                return;
-            }
-            showFeedback(false, "解析錯誤！核心受損", "Phân tích sai! Lõi bị hỏng");
+            if (currentHealth <= 0) { setTimeout(gameOver, 800); return; }
+            showFeedback(false, "解析錯誤！核心受損", "Phân tích sai! Lõi bị hỏng (-1 ❤️)", 0);
         }
     }
 
-    function showFeedback(isSuccess, textZh, textVn) {
+    function showFeedback(isSuccess, textZh, textVn, earnedScore) {
         const modal = document.getElementById("feedback-modal");
-        const icon = document.getElementById("fb-icon");
-        const btn = document.getElementById("fb-btn");
-        
-        modal.classList.remove("hidden");
+        document.getElementById("fb-icon").innerText = isSuccess ? (currentCombo>=3?"🔥":"✅") : "⚠️";
         document.getElementById("fb-zh").innerText = textZh;
         document.getElementById("fb-vn").innerText = textVn;
-
+        document.getElementById("fb-zh").style.color = isSuccess ? "var(--success-color)" : "var(--danger-color)";
+        document.getElementById("fb-zh").style.textShadow = isSuccess ? "0 0 10px var(--success-color)" : "0 0 10px var(--danger-color)";
+        
+        const scoreElem = document.getElementById("fb-score");
         if (isSuccess) {
-            icon.innerText = "✅";
-            document.getElementById("fb-zh").style.color = "var(--success-color)";
-            document.getElementById("fb-zh").style.textShadow = "0 0 10px var(--success-color)";
+            scoreElem.innerText = `+ ${earnedScore} POINTS`;
+            scoreElem.style.color = "var(--warning-color)";
         } else {
-            icon.innerText = "⚠️";
-            document.getElementById("fb-zh").style.color = "var(--danger-color)";
-            document.getElementById("fb-zh").style.textShadow = "0 0 10px var(--danger-color)";
+            scoreElem.innerText = "COMBO BROKEN";
+            scoreElem.style.color = "var(--danger-color)";
         }
+        
+        modal.classList.remove("hidden");
     }
 
     function closeFeedback() {
         document.getElementById("feedback-modal").classList.add("hidden");
-        
         if (questionsAnsweredInLevel >= QUESTIONS_PER_LEVEL) {
             currentLevel++;
-            if (currentLevel > TOTAL_LEVELS) {
-                endGame();
-            } else {
-                currentHealth = MAX_HEALTH; 
-                prepareLevel(); 
+            if (currentLevel > TOTAL_LEVELS) endGame();
+            else { 
+                currentHealth = MAX_HEALTH; stopHeartbeat();
+                document.getElementById("screen-game").classList.add("hidden"); 
+                showLevelIntroScreen(); 
             }
-        } else {
-            loadNextQuestion();
-        }
+        } else loadNextQuestion();
     }
 
-    function gameOver() {
-        document.getElementById("feedback-modal").classList.add("hidden");
-        document.getElementById("screen-game").classList.add("hidden");
-        document.getElementById("screen-gameover").classList.remove("hidden");
+    function gameOver() { 
+        stopHeartbeat();
+        document.getElementById("feedback-modal").classList.add("hidden"); 
+        document.getElementById("screen-game").classList.add("hidden"); 
+        document.getElementById("fail-score").innerText = totalScore;
+        document.getElementById("screen-gameover").classList.remove("hidden"); 
     }
-
-    function endGame() {
+    
+    function endGame() { 
+        stopHeartbeat();
         playLevelUpSound(); 
-        document.getElementById("screen-game").classList.add("hidden");
-        document.getElementById("screen-end").classList.remove("hidden");
-        document.getElementById("final-score").innerText = `總答對: ${totalCorrectCount} / 50`;
+        document.getElementById("screen-game").classList.add("hidden"); 
+        
+        // 結算評分
+        let rank = "C"; let rankClass = "rank-c";
+        if (totalScore >= 8500) { rank = "SSS"; rankClass = "rank-sss"; }
+        else if (totalScore >= 7000) { rank = "S"; rankClass = "rank-s"; }
+        else if (totalScore >= 5500) { rank = "A"; rankClass = "rank-a"; }
+        else if (totalScore >= 4000) { rank = "B"; rankClass = "rank-b"; }
+        
+        const rankElem = document.getElementById("final-rank");
+        rankElem.innerText = rank;
+        rankElem.className = `rank-display ${rankClass}`;
+        
+        document.getElementById("final-score").innerText = totalScore;
+        document.getElementById("final-combo").innerText = maxCombo;
+        
+        document.getElementById("screen-end").classList.remove("hidden"); 
     }
 </script>
 
